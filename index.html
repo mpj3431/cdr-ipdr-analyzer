@@ -20,7 +20,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">એક્યુરેટ CdrNo, B Party SDR, સમય અને First Cell ID Address સેટઅપ</p>
+                    <p class="text-xs text-slate-400">First Cell ID Address ફિક્સડ વર્ઝન</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -162,7 +162,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">સર્ચ કરો:</label>
-                    <input type="text" id="cdrSearch" oninput="resetCdrPageAndRender()" placeholder="નંબર, SDR નામ/સરનામું, લોકેશન સર્ચ..." class="w-full text-xs border rounded p-1.5">
+                    <input type="text" id="cdrSearch" oninput="resetCdrPageAndRender()" placeholder="નંબર, SDR નામ, લોકેશન સર્ચ..." class="w-full text-xs border rounded p-1.5">
                 </div>
             </div>
 
@@ -251,7 +251,7 @@
     <!-- Script Logic -->
     <script>
         let db;
-        const dbName = "CrimeDB_Exact_V8";
+        const dbName = "CrimeDB_Exact_V9";
         let currentPage = 1;
         const pageSize = 100;
         let cachedCdrRecords = [];
@@ -329,7 +329,6 @@
         function mapRow(row, type, crimeNo, fileId) {
             const keys = Object.keys(row);
             
-            // Exact term matching helper
             const getValueByExactTerms = (terms) => {
                 const matchedKey = keys.find(k => {
                     const cleanKey = k.toLowerCase().trim();
@@ -338,25 +337,16 @@
                 return matchedKey ? String(row[matchedKey]).trim() : '';
             };
 
-            // 1. A-Party (CdrNo)
             const targetNo = getValueByExactTerms(['cdrno', 'calling', 'a_party', 'target', 'msisdn', 'a party']);
-            
-            // 2. B-Party (CdrNo / B Party)
             const otherNo = getValueByExactTerms(['b party', 'b_party', 'called', 'other', 'b party number', 'b-party']);
-
-            // 3. B Party SDR
             const bPartySdr = getValueByExactTerms(['b party sdr', 'b_party_sdr', 'sdr', 'called_name', 'b party name']);
-
-            // 4. Date & Time
             const dateVal = getValueByExactTerms(['date', 'call_date']);
             const timeVal = getValueByExactTerms(['time', 'call_time']);
-
-            // 5. Duration & Call Type
             const duration = getValueByExactTerms(['duration', 'dur', 'sec']);
             const callType = getValueByExactTerms(['call type', 'call_type', 'type']);
-
-            // 6. First Cell ID Address / Location
-            const location = getValueByExactTerms(['first cell id', 'first_cell_id', 'address', 'tower address', 'location', 'first cell id address']);
+            
+            // Fixed First Cell ID Address mapping directly to the correct Excel column
+            const location = getValueByExactTerms(['first cell id address', 'first_cell_id_address', 'first cell id', 'address', 'location']);
 
             return {
                 fileId, fileType: type, crimeNo,
