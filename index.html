@@ -20,7 +20,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ સિલેક્શન સાથે</p>
+                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -38,6 +38,9 @@
                 </button>
                 <button onclick="switchTab('cdr')" id="tab-cdr" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
                     <i class="fa-solid fa-phone-volume"></i> CDR એનાલિસિસ
+                </button>
+                <button onclick="switchTab('summary')" id="tab-summary" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie"></i> CDR સમરી
                 </button>
                 <button onclick="switchTab('ipdr')" id="tab-ipdr" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
                     <i class="fa-solid fa-globe"></i> IPDR એનાલિસિસ
@@ -114,6 +117,15 @@
                         <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs py-2 rounded font-bold">ટાવર ડમ્પ સેવ કરો</button>
                     </form>
                 </div>
+            </div>
+
+            <!-- Upload Result Log -->
+            <div id="uploadLogBox" class="bg-white p-4 rounded-xl border hidden">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-sm text-gray-800">અપલોડ સ્ટેટસ</h3>
+                    <span id="uploadProgress" class="text-xs font-bold text-indigo-700"></span>
+                </div>
+                <ul id="uploadLog" class="text-xs space-y-1 max-h-48 overflow-y-auto"></ul>
             </div>
 
             <!-- Stored Files List -->
@@ -193,6 +205,36 @@
                     <span id="pageIndicator" class="font-bold text-gray-700">પેજ 1</span>
                     <button onclick="changeCdrPage(1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">આગળનું ➡️</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- CDR SUMMARY -->
+        <div id="tab-content-summary" class="tab-page space-y-4 hidden">
+            <div class="bg-indigo-900 text-white rounded-xl p-4 shadow flex justify-between items-center">
+                <div>
+                    <span class="bg-indigo-600 text-xs uppercase px-2 py-0.5 rounded font-bold">CDR સમરી</span>
+                    <h2 class="text-xl font-bold mt-1">કોલ ડિટેઇલ સારાંશ રિપોર્ટ</h2>
+                </div>
+                <button onclick="exportSummary()" class="bg-emerald-600 hover:bg-emerald-700 text-xs px-3 py-1.5 rounded font-bold"><i class="fa-solid fa-file-excel"></i> Excel એક્સપોર્ટ</button>
+            </div>
+            <div class="bg-white rounded-xl p-3 border grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">ગુના નંબર:</label>
+                    <select id="sumCrimeSelect" onchange="updateSumNumberDropdown(); renderCdrSummary();" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">તમામ ગુના નંબર</option></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">મોબાઇલ નંબર:</label>
+                    <select id="sumNumberSelect" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold text-indigo-900"><option value="">તમામ નંબરો</option></select>
+                </div>
+            </div>
+            <div id="sumCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl border overflow-hidden"><h3 class="font-bold text-sm p-3 bg-gray-50 border-b">ટોપ B-પાર્ટી નંબરો</h3><div class="overflow-x-auto max-h-80"><table class="min-w-full text-xs text-left"><thead class="bg-indigo-800 text-white sticky top-0"><tr><th class="p-2 border">નંબર</th><th class="p-2 border">SDR</th><th class="p-2 border">કોલ</th><th class="p-2 border">ડ્યુરેશન (સેક)</th></tr></thead><tbody id="sumBparty"></tbody></table></div></div>
+                <div class="bg-white rounded-xl border overflow-hidden"><h3 class="font-bold text-sm p-3 bg-gray-50 border-b">ટોપ લોકેશન (First Cell Address)</h3><div class="overflow-x-auto max-h-80"><table class="min-w-full text-xs text-left"><thead class="bg-indigo-800 text-white sticky top-0"><tr><th class="p-2 border">સરનામું</th><th class="p-2 border">કોલ</th></tr></thead><tbody id="sumLoc"></tbody></table></div></div>
+                <div class="bg-white rounded-xl border overflow-hidden"><h3 class="font-bold text-sm p-3 bg-gray-50 border-b">તારીખ મુજબ કોલ</h3><div class="overflow-x-auto max-h-80"><table class="min-w-full text-xs text-left"><thead class="bg-indigo-800 text-white sticky top-0"><tr><th class="p-2 border">તારીખ</th><th class="p-2 border">કોલ</th><th class="p-2 border">ડ્યુરેશન (સેક)</th></tr></thead><tbody id="sumDate"></tbody></table></div></div>
+                <div class="bg-white rounded-xl border overflow-hidden"><h3 class="font-bold text-sm p-3 bg-gray-50 border-b">નંબર મુજબ સારાંશ</h3><div class="overflow-x-auto max-h-80"><table class="min-w-full text-xs text-left"><thead class="bg-indigo-800 text-white sticky top-0"><tr><th class="p-2 border">નંબર</th><th class="p-2 border">કુલ</th><th class="p-2 border">Out</th><th class="p-2 border">In</th><th class="p-2 border">SMS</th></tr></thead><tbody id="sumNums"></tbody></table></div></div>
+                <div class="bg-white rounded-xl border overflow-hidden"><h3 class="font-bold text-sm p-3 bg-gray-50 border-b">IMEI / IMSI મુજબ</h3><div class="overflow-x-auto max-h-80"><table class="min-w-full text-xs text-left"><thead class="bg-indigo-800 text-white sticky top-0"><tr><th class="p-2 border">IMEI</th><th class="p-2 border">IMSI</th><th class="p-2 border">કોલ</th><th class="p-2 border">પ્રથમ</th><th class="p-2 border">છેલ્લી</th></tr></thead><tbody id="sumImei"></tbody></table></div></div>
+                <div class="bg-white rounded-xl border overflow-hidden"><h3 class="font-bold text-sm p-3 bg-gray-50 border-b">રોમિંગ (ટાર્ગેટ ક્યાં રહ્યો) / B-પાર્ટી સર્કલ</h3><div class="overflow-x-auto max-h-80"><table class="min-w-full text-xs text-left"><thead class="bg-indigo-800 text-white sticky top-0"><tr><th class="p-2 border">રાજ્ય/સર્કલ</th><th class="p-2 border">ટાર્ગેટ રોમિંગ કોલ</th><th class="p-2 border">B-પાર્ટી સર્કલ કોલ</th></tr></thead><tbody id="sumCircle"></tbody></table></div></div>
             </div>
         </div>
 
@@ -283,65 +325,80 @@
             document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
         }
 
+        function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+        function logUpload(msg, cls) {
+            document.getElementById('uploadLogBox').classList.remove('hidden');
+            const li = document.createElement('li');
+            li.className = cls; li.textContent = msg;
+            document.getElementById('uploadLog').appendChild(li);
+        }
+
+        function readWorkbook(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = evt => { try {
+                    let wb = XLSX.read(evt.target.result, { type: 'binary', sheetRows: 200000, sheets: ['Mapping'] });
+                    if (!wb.Sheets['Mapping']) wb = XLSX.read(evt.target.result, { type: 'binary', sheetRows: 200000 });
+                    resolve(wb);
+                } catch (err) { reject(err); } };
+                reader.onerror = () => reject(reader.error);
+                reader.readAsBinaryString(file);
+            });
+        }
+
         async function handleMultiUpload(e, type) {
             e.preventDefault();
             const crimeNo = document.getElementById(type === 'cdr' ? 'homeCrimeCdr' : type === 'ipdr' ? 'homeCrimeIpdr' : 'homeCrimeTower').value.trim();
             const fileInput = document.getElementById(type === 'cdr' ? 'homeFileCdr' : type === 'ipdr' ? 'homeFileIpdr' : 'homeFileTower');
+            const files = Array.from(fileInput.files);
+            if(!files.length) return;
 
-            if(!fileInput.files.length) return;
-
-            showToast('ફાઇલો પ્રોસેસ થઇ રહી છે...');
-
-            // Fetch existing files to avoid duplicates
+            document.getElementById('uploadLog').innerHTML = '';
             const existingFiles = await new Promise(resolve => {
-                const tx = db.transaction('files', 'readonly');
-                tx.objectStore('files').getAll().onsuccess = ev => resolve(ev.target.result || []);
+                db.transaction('files', 'readonly').objectStore('files').getAll().onsuccess = ev => resolve(ev.target.result || []);
             });
 
-            for (let file of fileInput.files) {
-                const isDuplicate = existingFiles.some(f => f.fileName === file.name && f.crimeNo === crimeNo && f.fileType === type);
-                if (isDuplicate) continue;
+            let ok = 0, skipped = 0, failed = 0, totalRows = 0;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                document.getElementById('uploadProgress').innerText = `${i + 1} / ${files.length} ફાઇલ પ્રોસેસ થાય છે...`;
+                await new Promise(r => setTimeout(r, 0));
 
-                await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        try {
-                            const workbook = XLSX.read(evt.target.result, { type: 'binary', sheetRows: 25000 });
-                            let sheetName = workbook.SheetNames[0];
-                            if(workbook.SheetNames.includes('Mapping')) sheetName = 'Mapping';
+                try {
+                    const workbook = await readWorkbook(file);
+                    let sheetName = workbook.SheetNames.includes('Mapping') ? 'Mapping' : workbook.SheetNames[0];
+                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+                    if(!sheetData.length) { failed++; logUpload(`❌ ${file.name} – ફાઇલ ખાલી છે`, 'text-rose-700'); continue; }
+                    const targetNo = mapRow(sheetData[0], type, crimeNo, 0).targetNo;
+                    if (existingFiles.some(f => f.crimeNo === crimeNo && f.fileType === type && f.rowCount === sheetData.length && (f.targetNo || '') === targetNo)) {
+                        skipped++; logUpload(`⚠️ ${file.name} (${targetNo}) – આ નંબરનો આ જ ડેટા પહેલેથી સેવ છે (સ્કીપ)`, 'text-amber-700'); continue;
+                    }
+                    existingFiles.push({ crimeNo, fileType: type, rowCount: sheetData.length, targetNo });
 
-                            const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
-                            if(!sheetData.length) { resolve(); return; }
-
-                            const fileRecord = { fileName: file.name, crimeNo, fileType: type, rowCount: sheetData.length };
-                            const tx = db.transaction(['files', 'records'], 'readwrite');
-                            const fileStore = tx.objectStore('files');
-
-                            fileStore.add(fileRecord).onsuccess = (ev) => {
-                                const fileId = ev.target.result;
-                                const recordStore = tx.objectStore('records');
-                                sheetData.forEach(row => {
-                                    recordStore.add(mapRow(row, type, crimeNo, fileId));
-                                });
-                            };
-
-                            tx.oncomplete = () => resolve();
-                        } catch (err) {
-                            console.error(err);
-                            resolve();
-                        }
-                    };
-                    reader.readAsBinaryString(file);
-                });
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction(['files', 'records'], 'readwrite');
+                        tx.objectStore('files').add({ fileName: file.name, crimeNo, fileType: type, rowCount: sheetData.length, targetNo }).onsuccess = (ev) => {
+                            const fileId = ev.target.result;
+                            const rs = tx.objectStore('records');
+                            sheetData.forEach(row => rs.add(mapRow(row, type, crimeNo, fileId)));
+                        };
+                        tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
+                    });
+                    ok++; totalRows += sheetData.length;
+                    logUpload(`✅ ${file.name} (${targetNo}) – ${sheetData.length} રેકોર્ડ્સ સેવ થયા`, 'text-emerald-700');
+                } catch (err) {
+                    console.error(err); failed++; logUpload(`❌ ${file.name} – વાંચી શકાઈ નહીં`, 'text-rose-700');
+                }
             }
-
-            showToast('તમામ ફાઇલો સફળતાપૂર્વક અપલોડ અને સેવ થઈ ગઈ!');
+            document.getElementById('uploadProgress').innerText = `સેવ: ${ok} | સ્કીપ: ${skipped} | એરર: ${failed} | કુલ રેકોર્ડ્સ: ${totalRows}`;
+            showToast(`${ok} ફાઇલ સેવ થઈ`);
             e.target.reset();
             loadDropdowns();
             renderAll();
         }
 
-        function mapRow(row, type, crimeNo, fileId) {
+                function mapRow(row, type, crimeNo, fileId) {
             const keys = Object.keys(row);
             const getVal = (terms) => {
                 const k = keys.find(key => terms.some(t => key.toLowerCase().trim() === t.toLowerCase() || key.toLowerCase().includes(t.toLowerCase())));
@@ -358,7 +415,8 @@
                 duration: getVal(['duration', 'dur', 'sec']),
                 type: getVal(['call type', 'call_type', 'type']),
                 firstCellAddress: getVal(['first cell id address', 'first_cell_id_address', 'tower address', 'tower_address']),
-                lastCellAddress: getVal(['last cell id address', 'last_cell_id_address'])
+                lastCellAddress: getVal(['last cell id address', 'last_cell_id_address']),
+                imei: getVal(['imei']), imsi: getVal(['imsi']), roaming: getVal(['roaming']), bCircle: getVal(['b party circle'])
             };
         }
 
@@ -367,6 +425,7 @@
             resetCdrPageAndRender();
             renderIpdrData();
             renderTowerData();
+            renderCdrSummary();
         }
 
         function renderHomeFiles() {
@@ -405,6 +464,11 @@
                 sel.innerHTML = '<option value="">તમામ ગુના નંબર</option>';
                 crimes.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
                 updateCdrNumberDropdown();
+                const ss = document.getElementById('sumCrimeSelect'), prev = ss.value;
+                ss.innerHTML = '<option value="">તમામ ગુના નંબર</option>';
+                crimes.forEach(c => ss.innerHTML += `<option value="${esc(c)}">${esc(c)}</option>`);
+                ss.value = crimes.includes(prev) ? prev : '';
+                updateSumNumberDropdown();
             };
         }
 
@@ -513,6 +577,93 @@
                     </tr>`;
                 });
             };
+        }
+
+
+        // ---------- CDR SUMMARY ----------
+        let lastSummary = null;
+        function classifyCall(t) {
+            t = String(t || '').toLowerCase();
+            const isIn = /(^|[^a-z])(in|mt|incoming)([^a-z]|$)/.test(t) || t.includes('incoming');
+            if (t.includes('sms')) return isIn ? 'smsIn' : 'smsOut';
+            return isIn ? 'in' : 'out';
+        }
+        function toSeconds(d) {
+            d = String(d || '').trim();
+            if (d.includes(':')) { const p = d.split(':').map(Number); return p.reduce((a, v) => a * 60 + (v || 0), 0); }
+            return parseInt(d) || 0;
+        }
+        function fmtDur(sec) { const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return `${h}h ${m}m ${s}s`; }
+        function dateKey(d) {
+            const MON = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
+            const m = String(d).trim().match(/^(\d{1,4})[\/\-. ]([A-Za-z]{3,}|\d{1,2})[\/\-. ](\d{1,4})/);
+            if (!m) return 0;
+            const mon = isNaN(m[2]) ? (MON[m[2].slice(0, 3).toLowerCase()] || 0) : +m[2];
+            return m[1].length === 4 ? +m[1] * 10000 + mon * 100 + +m[3] : +m[3] * 10000 + mon * 100 + +m[1];
+        }
+        function updateSumNumberDropdown() {
+            const crime = document.getElementById('sumCrimeSelect').value;
+            db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
+                const nums = [...new Set((e.target.result || []).filter(r => r.fileType === 'cdr' && (!crime || r.crimeNo === crime)).map(r => r.targetNo).filter(Boolean))];
+                const sel = document.getElementById('sumNumberSelect'), prev = sel.value;
+                sel.innerHTML = '<option value="">તમામ નંબરો</option>';
+                nums.forEach(n => sel.innerHTML += `<option value="${esc(n)}">${esc(n)}</option>`);
+                sel.value = nums.includes(prev) ? prev : '';
+                renderCdrSummary();
+            };
+        }
+        function topN(map, n) { return Object.entries(map).sort((a, b) => b[1].c - a[1].c).slice(0, n); }
+        function renderCdrSummary() {
+            if(!db || !document.getElementById('sumCrimeSelect')) return;
+            const crime = document.getElementById('sumCrimeSelect').value, number = document.getElementById('sumNumberSelect').value;
+            db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
+                const recs = (e.target.result || []).filter(r => r.fileType === 'cdr' && (!crime || r.crimeNo === crime) && (!number || r.targetNo === number));
+                const S = { total: recs.length, out: 0, in: 0, sms: 0, dur: 0, night: 0, minK: 0, maxK: 0, minD: '', maxD: '' };
+                const bp = {}, loc = {}, dts = {}, nums = {}, im = {}, circ = {};
+                recs.forEach(r => {
+                    const k = classifyCall(r.type), sec = toSeconds(r.duration), isSms = k.startsWith('sms');
+                    if (isSms) S.sms++; else if (k === 'in') S.in++; else S.out++;
+                    S.dur += sec;
+                    const h = parseInt(r.time); if (!isNaN(h) && (h >= 22 || h < 6)) S.night++;
+                    const dk = dateKey(r.date);
+                    if (dk) { if (!S.minK || dk < S.minK) { S.minK = dk; S.minD = r.date; } if (dk > S.maxK) { S.maxK = dk; S.maxD = r.date; } }
+                    if (r.otherNo) { const b = bp[r.otherNo] || (bp[r.otherNo] = { c: 0, d: 0, sdr: '' }); b.c++; b.d += sec; if (!b.sdr && r.bPartySdr) b.sdr = r.bPartySdr; }
+                    if (r.firstCellAddress) (loc[r.firstCellAddress] = loc[r.firstCellAddress] || { c: 0 }).c++;
+                    if (r.imei) { const x = im[r.imei + '|' + (r.imsi || '')] || (im[r.imei + '|' + (r.imsi || '')] = { c: 0, imei: r.imei, imsi: r.imsi || '', minK: 0, maxK: 0, minD: '', maxD: '' }); x.c++; if (dk) { if (!x.minK || dk < x.minK) { x.minK = dk; x.minD = r.date; } if (dk > x.maxK) { x.maxK = dk; x.maxD = r.date; } } }
+                    if (r.roaming) (circ[r.roaming] = circ[r.roaming] || { r: 0, b: 0 }).r++;
+                    if (r.bCircle) (circ[r.bCircle] = circ[r.bCircle] || { r: 0, b: 0 }).b++;
+                    if (r.date) { const d = dts[r.date] || (dts[r.date] = { c: 0, d: 0, k: dk }); d.c++; d.d += sec; }
+                    const n = nums[r.targetNo] || (nums[r.targetNo] = { c: 0, out: 0, in: 0, sms: 0 });
+                    n.c++; if (isSms) n.sms++; else if (k === 'in') n.in++; else n.out++;
+                });
+                const card = (t, v, c) => `<div class="bg-white border-l-4 ${c} rounded-lg p-3 shadow-sm"><div class="text-xs text-gray-500">${t}</div><div class="text-lg font-black text-gray-800">${v}</div></div>`;
+                document.getElementById('sumCards').innerHTML =
+                    card('કુલ રેકોર્ડ્સ', S.total, 'border-indigo-500') + card('આઉટગોઇંગ કોલ', S.out, 'border-blue-500') +
+                    card('ઇનકમિંગ કોલ', S.in, 'border-emerald-500') + card('SMS', S.sms, 'border-amber-500') +
+                    card('કુલ ડ્યુરેશન', fmtDur(S.dur), 'border-purple-500') + card('યુનિક B-પાર્ટી', Object.keys(bp).length, 'border-rose-500') +
+                    card('રાત્રિ કોલ (10pm-6am)', S.night, 'border-slate-700') + card('પીરિયડ', S.minD ? `${esc(S.minD)} → ${esc(S.maxD)}` : '-', 'border-teal-500');
+                const bpRows = topN(bp, 20), locRows = topN(loc, 15), dateRows = Object.entries(dts).sort((a, b) => a[1].k - b[1].k), numRows = topN(nums, 50);
+                document.getElementById('sumBparty').innerHTML = bpRows.map(([k, v]) => `<tr><td class="p-2 border font-semibold">${esc(k)}</td><td class="p-2 border max-w-xs truncate" title="${esc(v.sdr)}">${esc(String(v.sdr).split(',')[0])}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${v.d}</td></tr>`).join('');
+                document.getElementById('sumLoc').innerHTML = locRows.map(([k, v]) => `<tr><td class="p-2 border max-w-sm truncate" title="${esc(k)}">${esc(k)}</td><td class="p-2 border font-bold">${v.c}</td></tr>`).join('');
+                document.getElementById('sumDate').innerHTML = dateRows.map(([k, v]) => `<tr><td class="p-2 border">${esc(k)}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${v.d}</td></tr>`).join('');
+                document.getElementById('sumNums').innerHTML = numRows.map(([k, v]) => `<tr><td class="p-2 border font-semibold">${esc(k)}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${v.out}</td><td class="p-2 border">${v.in}</td><td class="p-2 border">${v.sms}</td></tr>`).join('');
+                const imRows = Object.values(im).sort((a, b) => b.c - a.c), circRows = Object.entries(circ).sort((a, b) => (b[1].r + b[1].b) - (a[1].r + a[1].b));
+                document.getElementById('sumImei').innerHTML = imRows.map(v => `<tr><td class="p-2 border font-semibold">${esc(v.imei)}</td><td class="p-2 border">${esc(v.imsi)}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${esc(v.minD)}</td><td class="p-2 border">${esc(v.maxD)}</td></tr>`).join('');
+                document.getElementById('sumCircle').innerHTML = circRows.map(([k, v]) => `<tr><td class="p-2 border font-semibold">${esc(k)}</td><td class="p-2 border">${v.r}</td><td class="p-2 border">${v.b}</td></tr>`).join('');
+                lastSummary = { S, bpRows, locRows, dateRows, numRows, imRows, circRows };
+            };
+        }
+        function exportSummary() {
+            if (!lastSummary || !lastSummary.S.total) { showToast('એક્સપોર્ટ માટે ડેટા નથી'); return; }
+            const { S, bpRows, locRows, dateRows, numRows, imRows, circRows } = lastSummary, wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{ 'કુલ રેકોર્ડ્સ': S.total, 'Outgoing': S.out, 'Incoming': S.in, 'SMS': S.sms, 'કુલ ડ્યુરેશન (સેક)': S.dur, 'રાત્રિ કોલ': S.night, 'પીરિયડ': `${S.minD} to ${S.maxD}` }]), 'Summary');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(bpRows.map(([k, v]) => ({ 'B Party': k, 'SDR': v.sdr, 'Calls': v.c, 'Duration (sec)': v.d }))), 'Top B-Party');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(locRows.map(([k, v]) => ({ 'Location': k, 'Calls': v.c }))), 'Top Locations');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dateRows.map(([k, v]) => ({ 'Date': k, 'Calls': v.c, 'Duration (sec)': v.d }))), 'Datewise');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(numRows.map(([k, v]) => ({ 'Number': k, 'Total': v.c, 'Out': v.out, 'In': v.in, 'SMS': v.sms }))), 'Per Number');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(imRows.map(v => ({ 'IMEI': v.imei, 'IMSI': v.imsi, 'Calls': v.c, 'First': v.minD, 'Last': v.maxD }))), 'IMEI');
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(circRows.map(([k, v]) => ({ 'Circle': k, 'Target Roaming': v.r, 'B-Party Circle': v.b }))), 'Circle');
+            XLSX.writeFile(wb, 'CDR_Summary.xlsx');
         }
 
         function showToast(msg) {
