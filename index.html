@@ -23,7 +23,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">ગુના નંબર અને મોબાઇલ નંબર વાઇઝ ફિલ્ટર સોફ્ટવેર</p>
+                    <p class="text-xs text-slate-400">First Cell ID Address & B-Party Name/Address સપોર્ટ સાથે</p>
                 </div>
             </div>
             <button onclick="openStorageModal()" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 px-3 py-1.5 rounded border border-slate-700 flex items-center gap-1.5">
@@ -63,7 +63,7 @@
         <div id="tab-content-home" class="tab-page space-y-6">
             <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-black mb-2">ડેટા અપલોડ અને મેનેજમેન્ટ સેન્ટર</h2>
-                <p class="text-xs text-indigo-200">અહીંથી તમે CDR, IPDR અને ટાવર ડમ્પની ફાઇલો ગુના નંબર સાથે અપલોડ કરી શકો છો.</p>
+                <p class="text-xs text-indigo-200">CDR, IPDR અને ટાવર ડમ્પની Excel/CSV ફાઇલો ગુના નંબર સાથે અપલોડ કરો.</p>
             </div>
 
             <!-- Upload Cards Grid -->
@@ -153,8 +153,12 @@
                     <h2 class="text-xl font-bold mt-1">કોલ ડિટેઇલ રેકોર્ડ (CDR) ડેશબોર્ડ</h2>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="exportToExcel('cdr')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Excel ડાઉનલોડ</button>
-                    <button onclick="exportToPDF('cdr')" class="bg-rose-600 text-white px-3 py-1 rounded text-xs">PDF ડાઉનલોડ</button>
+                    <button onclick="exportToExcel('cdr')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-file-excel"></i> Excel ડાઉનલોડ
+                    </button>
+                    <button onclick="exportToPDF('cdr')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-file-pdf"></i> PDF ડાઉનલોડ
+                    </button>
                 </div>
             </div>
 
@@ -174,23 +178,26 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">સર્ચ કરો:</label>
-                    <input type="text" id="cdrSearch" oninput="renderCdrData()" placeholder="નંબર અથવા B-પાર્ટી સર્ચ..." class="w-full text-xs border rounded p-1.5">
+                    <input type="text" id="cdrSearch" oninput="renderCdrData()" placeholder="નંબર, નામ, લોકેશન કે B-પાર્ટી સર્ચ..." class="w-full text-xs border rounded p-1.5">
                 </div>
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-xl border overflow-hidden">
-                <div class="overflow-x-auto max-h-96">
+            <div class="bg-white rounded-xl border overflow-hidden shadow-sm">
+                <div class="overflow-x-auto max-h-[500px]">
                     <table class="min-w-full text-xs text-left">
-                        <thead class="bg-blue-800 text-white sticky top-0">
+                        <thead class="bg-blue-800 text-white sticky top-0 z-10">
                             <tr>
-                                <th class="p-2 border">ગુના નંબર</th>
-                                <th class="p-2 border">A-પાર્ટી (Target)</th>
-                                <th class="p-2 border">B-પાર્ટી (Other)</th>
-                                <th class="p-2 border">તારીખ & સમય</th>
-                                <th class="p-2 border">પ્રકાર</th>
-                                <th class="p-2 border">ડ્યુરેશન</th>
-                                <th class="p-2 border">IMEI નંબર</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">ગુના નંબર</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">A-પાર્ટી (Target)</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">B-પાર્ટી (Other)</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">B-પાર્ટીનું નામ</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">B-પાર્ટીનું સરનામું</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">તારીખ & સમય</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">પ્રકાર</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">ડ્યુરેશન</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">IMEI નંબર</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">જગ્યા/લોકેશન (First Cell ID Address)</th>
                             </tr>
                         </thead>
                         <tbody id="cdrTableBody" class="divide-y text-gray-700"></tbody>
@@ -306,7 +313,7 @@
     <!-- Script Logic -->
     <script>
         let db;
-        const request = indexedDB.open("CrimeAnalyzerDB_V2", 1);
+        const request = indexedDB.open("CrimeAnalyzerDB_V3", 1);
 
         request.onupgradeneeded = function(e) {
             db = e.target.result;
@@ -377,17 +384,21 @@
         function mapRow(row, type, crimeNo, fileId) {
             const keys = Object.keys(row);
             const get = (terms) => {
-                const k = keys.find(key => terms.some(t => key.toLowerCase().includes(t.toLowerCase())));
+                const k = keys.find(key => terms.some(t => key.toLowerCase().trim().includes(t.toLowerCase())));
                 return k ? String(row[k]).trim() : '';
             };
+
             return {
                 fileId, fileType: type, crimeNo,
-                targetNo: get(['calling', 'a_party', 'target', 'msisdn', 'source_ip', 'mobile']),
-                otherNo: get(['called', 'b_party', 'other', 'destination_ip']),
-                dateTime: get(['date', 'time', 'datetime']),
-                duration: get(['duration', 'dur']),
-                type: get(['type', 'call_type']),
-                imei: get(['imei', 'device'])
+                targetNo: get(['calling', 'a_party', 'target', 'msisdn', 'source_ip', 'mobile', 'a party']),
+                otherNo: get(['called', 'b_party', 'other', 'destination_ip', 'b party', 'other_party']),
+                bPartyName: get(['b_party_name', 'b party name', 'called_name', 'b_name', 'name']),
+                bPartyAddress: get(['b_party_address', 'b party address', 'called_address', 'b_address', 'address']),
+                location: get(['first_cell_id_address', 'first cell id', 'cell_address', 'location', 'tower', 'address', 'site']),
+                dateTime: get(['date', 'time', 'datetime', 'call_date']),
+                duration: get(['duration', 'dur', 'sec']),
+                type: get(['type', 'call_type', 'protocol']),
+                imei: get(['imei', 'device', 'device_id'])
             };
         }
 
@@ -457,18 +468,24 @@
                 const records = (e.target.result || []).filter(r => r.fileType === 'cdr' &&
                     (!crime || r.crimeNo === crime) &&
                     (!number || r.targetNo === number) &&
-                    (!search || r.targetNo.toLowerCase().includes(search) || r.otherNo.toLowerCase().includes(search))
+                    (!search || r.targetNo.toLowerCase().includes(search) || 
+                                r.otherNo.toLowerCase().includes(search) || 
+                                (r.bPartyName && r.bPartyName.toLowerCase().includes(search)) ||
+                                (r.location && r.location.toLowerCase().includes(search)))
                 );
 
                 records.forEach(r => {
                     tbody.innerHTML += `<tr class="hover:bg-blue-50">
                         <td class="p-2 border font-bold">${r.crimeNo}</td>
-                        <td class="p-2 border text-blue-900 font-semibold" onclick="copyText('${r.targetNo}')">${r.targetNo}</td>
-                        <td class="p-2 border" onclick="copyText('${r.otherNo}')">${r.otherNo}</td>
+                        <td class="p-2 border text-blue-900 font-semibold cursor-pointer" onclick="copyText('${r.targetNo}')">${r.targetNo}</td>
+                        <td class="p-2 border cursor-pointer" onclick="copyText('${r.otherNo}')">${r.otherNo}</td>
+                        <td class="p-2 border">${r.bPartyName || '-'}</td>
+                        <td class="p-2 border max-w-xs truncate" title="${r.bPartyAddress || ''}">${r.bPartyAddress || '-'}</td>
                         <td class="p-2 border">${r.dateTime}</td>
                         <td class="p-2 border">${r.type}</td>
                         <td class="p-2 border">${r.duration}</td>
-                        <td class="p-2 border">${r.imei}</td>
+                        <td class="p-2 border cursor-pointer" onclick="copyText('${r.imei}')">${r.imei}</td>
+                        <td class="p-2 border max-w-sm font-medium text-slate-800" title="${r.location}">${r.location || '-'}</td>
                     </tr>`;
                 });
             };
@@ -528,6 +545,7 @@
         }
 
         function copyText(txt) {
+            if(!txt) return;
             navigator.clipboard.writeText(txt);
             showToast(`કોપી થયું: ${txt}`);
         }
@@ -571,11 +589,11 @@
 
         function exportToPDF(type) {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF('landscape');
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
                 const data = (e.target.result || []).filter(r => r.fileType === type);
-                const body = data.map(r => [r.crimeNo, r.targetNo, r.otherNo, r.dateTime]);
-                doc.autoTable({ head: [['Crime No', 'Target', 'Other', 'DateTime']], body });
+                const body = data.map(r => [r.crimeNo, r.targetNo, r.otherNo, r.bPartyName || '', r.dateTime, r.location || '']);
+                doc.autoTable({ head: [['Crime No', 'Target', 'Other', 'B-Name', 'DateTime', 'Location']], body });
                 doc.save(`${type}_report.pdf`);
             };
         }
