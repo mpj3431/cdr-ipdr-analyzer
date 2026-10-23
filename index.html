@@ -20,7 +20,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ અને ડેટા સેવિંગ ફિક્સડ વર્ઝન</p>
+                    <p class="text-xs text-slate-400">સમરી અને CDR માં B Party SDR કોલમ સેટઅપ</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -34,7 +34,10 @@
         <div class="max-w-7xl mx-auto px-4 py-2">
             <nav class="flex flex-wrap gap-2">
                 <button onclick="switchTab('home')" id="tab-home" class="tab-btn px-4 py-2 rounded-md font-medium text-sm flex items-center gap-2 bg-slate-900 text-white shadow">
-                    <i class="fa-solid fa-house"></i> હોમ / મલ્ટીફાઇલ અપલોડ
+                    <i class="fa-solid fa-house"></i> હોમ / અપલોડ
+                </button>
+                <button onclick="switchTab('summary')" id="tab-summary" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie"></i> સમરી (Summary)
                 </button>
                 <button onclick="switchTab('cdr')" id="tab-cdr" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
                     <i class="fa-solid fa-phone-volume"></i> CDR એનાલિસિસ
@@ -136,7 +139,37 @@
             </div>
         </div>
 
-        <!-- 2. CDR DASHBOARD -->
+        <!-- 2. SUMMARY TAB -->
+        <div id="tab-content-summary" class="tab-page space-y-4 hidden">
+            <div class="bg-slate-800 text-white rounded-xl p-4 shadow flex justify-between items-center">
+                <div>
+                    <span class="bg-amber-600 text-xs uppercase px-2 py-0.5 rounded font-bold">કોલ સમરી</span>
+                    <h2 class="text-xl font-bold mt-1">કોલ ડિટેઇલ સમરી (Summary with B Party SDR)</h2>
+                </div>
+                <div id="summaryCountText" class="text-xs bg-slate-700 px-3 py-1 rounded">કુલ રેકોર્ડ્સ: 0</div>
+            </div>
+
+            <div class="bg-white rounded-xl border overflow-hidden shadow-sm">
+                <div class="overflow-x-auto max-h-[450px]">
+                    <table class="min-w-full text-xs text-left">
+                        <thead class="bg-slate-700 text-white sticky top-0 z-10">
+                            <tr>
+                                <th class="p-2.5 border whitespace-nowrap">ગુના નંબર</th>
+                                <th class="p-2.5 border whitespace-nowrap">A-પાર્ટી (CdrNo)</th>
+                                <th class="p-2.5 border whitespace-nowrap">B-પાર્ટી નંબર</th>
+                                <th class="p-2.5 border whitespace-nowrap">B Party SDR (નામ તથા સરનામું)</th>
+                                <th class="p-2.5 border whitespace-nowrap">પ્રોવાઇડર</th>
+                                <th class="p-2.5 border whitespace-nowrap">ટાઇપ</th>
+                                <th class="p-2.5 border whitespace-nowrap">કુલ કોલ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody" class="divide-y text-gray-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. CDR DASHBOARD -->
         <div id="tab-content-cdr" class="tab-page space-y-4 hidden">
             <div class="bg-blue-900 text-white rounded-xl p-4 shadow flex justify-between items-center">
                 <div>
@@ -172,16 +205,16 @@
                     <table class="min-w-full text-xs text-left">
                         <thead class="bg-blue-800 text-white sticky top-0 z-10">
                             <tr>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">ગુના નંબર</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">A-પાર્ટી (CdrNo)</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">B-પાર્ટી (CdrNo)</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">B Party SDR (નામ તથા સરનામું)</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">તારીખ</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">સમય</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">ડ્યુરેશન</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">પ્રકાર (Call Type)</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">First Cell ID Address (ટાવર એડ્રેસ)</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">Last Cell ID Address (અંતિમ એડ્રેસ)</th>
+                                <th class="p-2.5 border whitespace-nowrap">ગુના નંબર</th>
+                                <th class="p-2.5 border whitespace-nowrap">A-પાર્ટી (CdrNo)</th>
+                                <th class="p-2.5 border whitespace-nowrap">B-પાર્ટી (CdrNo)</th>
+                                <th class="p-2.5 border whitespace-nowrap">B Party SDR (નામ તથા સરનામું)</th>
+                                <th class="p-2.5 border whitespace-nowrap">તારીખ</th>
+                                <th class="p-2.5 border whitespace-nowrap">સમય</th>
+                                <th class="p-2.5 border whitespace-nowrap">ડ્યુરેશન</th>
+                                <th class="p-2.5 border whitespace-nowrap">પ્રકાર (Call Type)</th>
+                                <th class="p-2.5 border whitespace-nowrap">First Cell ID Address</th>
+                                <th class="p-2.5 border whitespace-nowrap">Last Cell ID Address</th>
                             </tr>
                         </thead>
                         <tbody id="cdrTableBody" class="divide-y text-gray-700"></tbody>
@@ -189,14 +222,14 @@
                 </div>
                 <!-- Pagination Controls -->
                 <div class="p-3 bg-gray-50 border-t flex justify-between items-center text-xs">
-                    <button onclick="changeCdrPage(-1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⬅️ અગાઉનું (Prev)</button>
+                    <button onclick="changeCdrPage(-1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⬅️ અગાઉનું</button>
                     <span id="pageIndicator" class="font-bold text-gray-700">પેજ 1</span>
-                    <button onclick="changeCdrPage(1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">આગળનું (Next) ➡️</button>
+                    <button onclick="changeCdrPage(1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">આગળનું ➡️</button>
                 </div>
             </div>
         </div>
 
-        <!-- 3. IPDR DASHBOARD -->
+        <!-- 4. IPDR DASHBOARD -->
         <div id="tab-content-ipdr" class="tab-page space-y-4 hidden">
             <div class="bg-emerald-900 text-white rounded-xl p-4 shadow">
                 <h2 class="text-xl font-bold">IP Detail Record ડેશબોર્ડ</h2>
@@ -219,7 +252,7 @@
             </div>
         </div>
 
-        <!-- 4. TOWER DUMP DASHBOARD -->
+        <!-- 5. TOWER DUMP DASHBOARD -->
         <div id="tab-content-tower" class="tab-page space-y-4 hidden">
             <div class="bg-purple-900 text-white rounded-xl p-4 shadow">
                 <h2 class="text-xl font-bold">Tower Dump ડેશબોર્ડ</h2>
@@ -252,7 +285,7 @@
     <!-- Script Logic -->
     <script>
         let db;
-        const dbName = "CrimeDB_MultiUpload_V13";
+        const dbName = "CrimeDB_SummarySDR_V14";
         let currentPage = 1;
         const pageSize = 100;
         let cachedCdrRecords = [];
@@ -263,16 +296,13 @@
             db = e.target.result;
             if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'id', autoIncrement: true });
             if (!db.objectStoreNames.contains('records')) db.createObjectStore('records', { keyPath: 'id', autoIncrement: true });
+            if (!db.objectStoreNames.contains('summary')) db.createObjectStore('summary', { keyPath: 'id', autoIncrement: true });
         };
 
         request.onsuccess = function(e) {
             db = e.target.result;
             loadDropdowns();
             renderAll();
-        };
-
-        request.onerror = function(e) {
-            console.error("IndexedDB error:", e);
         };
 
         function switchTab(tab) {
@@ -305,76 +335,90 @@
                 const isDuplicate = existingFiles.some(f => f.fileName === file.name && f.crimeNo === crimeNo && f.fileType === type);
                 if (isDuplicate) continue;
 
-                const data = await readExcelFile(file);
-                const fileRecord = { fileName: file.name, crimeNo, fileType: type, rowCount: data.length };
+                const workbook = await readExcelWorkbook(file);
+                const fileRecord = { fileName: file.name, crimeNo, fileType: type, rowCount: 0 };
                 
-                const tx = db.transaction(['files', 'records'], 'readwrite');
+                const tx = db.transaction(['files', 'records', 'summary'], 'readwrite');
                 const fileStore = tx.objectStore('files');
                 
                 const fileId = await new Promise(res => {
                     fileStore.add(fileRecord).onsuccess = ev => res(ev.target.result);
                 });
 
-                const recordStore = tx.objectStore('records');
-                for(let i = 0; i < data.length; i++) {
-                    recordStore.add(mapRow(data[i], type, crimeNo, fileId));
+                // 1. Process Mapping / Main sheet (CDR)
+                if (workbook.Sheets['Mapping']) {
+                    const data = XLSX.utils.sheet_to_json(workbook.Sheets['Mapping'], { defval: "" });
+                    const recordStore = tx.objectStore('records');
+                    data.forEach(row => recordStore.add(mapCdrRow(row, crimeNo, fileId)));
+                }
+
+                // 2. Process Summary sheet if available
+                if (workbook.Sheets['Summary']) {
+                    const sumData = XLSX.utils.sheet_to_json(workbook.Sheets['Summary'], { defval: "" });
+                    const sumStore = tx.objectStore('summary');
+                    sumData.forEach(row => sumStore.add(mapSummaryRow(row, crimeNo, fileId)));
                 }
             }
 
-            showToast('મલ્ટીફાઇલ અપલોડ અને સેવિંગ સફળતાપૂર્વક પૂર્ણ થયું!');
+            showToast('મલ્ટીફાઇલ અપલોડ અને સમરી જનરેશન સફળ!');
             e.target.reset();
             loadDropdowns();
             renderAll();
         }
 
-        function readExcelFile(file) {
+        function readExcelWorkbook(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const wb = XLSX.read(e.target.result, { type: 'binary', sheetRows: 30000 });
-                    resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" }));
+                    const wb = XLSX.read(e.target.result, { type: 'binary' });
+                    resolve(wb);
                 };
                 reader.readAsBinaryString(file);
             });
         }
 
-        function mapRow(row, type, crimeNo, fileId) {
+        function mapCdrRow(row, crimeNo, fileId) {
             const keys = Object.keys(row);
-            const getValueByExactTerms = (terms) => {
-                const matchedKey = keys.find(k => {
-                    const cleanKey = k.toLowerCase().trim();
-                    return terms.some(t => cleanKey === t.toLowerCase() || cleanKey.includes(t.toLowerCase()));
-                });
-                return matchedKey ? String(row[matchedKey]).trim() : '';
+            const getVal = (terms) => {
+                const k = keys.find(key => terms.some(t => key.toLowerCase().trim() === t.toLowerCase() || key.toLowerCase().includes(t.toLowerCase())));
+                return k ? String(row[k]).trim() : '';
             };
 
-            const targetNo = getValueByExactTerms(['cdrno', 'calling', 'a_party', 'target', 'msisdn', 'a party']);
-            const otherNo = getValueByExactTerms(['b party', 'b_party', 'called', 'other', 'b party number', 'b-party']);
-            const bPartySdr = getValueByExactTerms(['b party sdr', 'b_party_sdr', 'sdr', 'called_name', 'b party name']);
-            const dateVal = getValueByExactTerms(['date', 'call_date']);
-            const timeVal = getValueByExactTerms(['time', 'call_time']);
-            const duration = getValueByExactTerms(['duration', 'dur', 'sec']);
-            const callType = getValueByExactTerms(['call type', 'call_type', 'type']);
-            
-            const firstCellAddress = getValueByExactTerms(['first cell id address', 'first_cell_id_address', 'tower address', 'tower_address']);
-            const lastCellAddress = getValueByExactTerms(['last cell id address', 'last_cell_id_address']);
+            return {
+                fileId, fileType: 'cdr', crimeNo,
+                targetNo: getVal(['cdrno', 'calling', 'a_party', 'target']),
+                otherNo: getVal(['b party', 'b_party', 'called']),
+                bPartySdr: getVal(['b party sdr', 'b_party_sdr', 'sdr']),
+                date: getVal(['date']),
+                time: getVal(['time']),
+                duration: getVal(['duration']),
+                type: getVal(['call type', 'type']),
+                firstCellAddress: getVal(['first cell id address', 'tower address']),
+                lastCellAddress: getVal(['last cell id address'])
+            };
+        }
+
+        function mapSummaryRow(row, crimeNo, fileId) {
+            const keys = Object.keys(row);
+            const getVal = (terms) => {
+                const k = keys.find(key => terms.some(t => key.toLowerCase().trim() === t.toLowerCase() || key.toLowerCase().includes(t.toLowerCase())));
+                return k ? String(row[k]).trim() : '';
+            };
 
             return {
-                fileId, fileType: type, crimeNo,
-                targetNo,
-                otherNo,
-                bPartySdr: bPartySdr || '-',
-                date: dateVal || '-',
-                time: timeVal || '-',
-                duration: duration || '-',
-                type: callType || '-',
-                firstCellAddress: firstCellAddress || '-',
-                lastCellAddress: lastCellAddress || '-'
+                fileId, crimeNo,
+                targetNo: getVal(['cdrno', 'a party', 'target']),
+                bParty: getVal(['b party', 'called']),
+                bPartySdr: getVal(['b party sdr', 'sdr']),
+                provider: getVal(['provider', 'operator']),
+                type: getVal(['type']),
+                totalCalls: getVal(['total calls', 'calls'])
             };
         }
 
         function renderAll() {
             renderHomeFiles();
+            renderSummaryTable();
             resetCdrPageAndRender();
             renderIpdrData();
             renderTowerData();
@@ -390,18 +434,44 @@
                         <td class="p-2 border font-bold">${f.crimeNo}</td>
                         <td class="p-2 border">${f.fileName}</td>
                         <td class="p-2 border uppercase">${f.fileType}</td>
-                        <td class="p-2 border">${f.rowCount}</td>
+                        <td class="p-2 border">સફળ</td>
                         <td class="p-2 border"><button onclick="deleteFile(${f.id})" class="text-rose-600 font-bold"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
                 });
             };
         }
 
+        function renderSummaryTable() {
+            if(!db) return;
+            db.transaction('summary', 'readonly').objectStore('summary').getAll().onsuccess = (e) => {
+                const records = e.target.result || [];
+                document.getElementById('summaryCountText.innerText` = `કુલ રેકોર્ડ્સ: ${records.length}`;
+                const tbody = document.getElementById('summaryTableBody');
+                tbody.innerHTML = '';
+                records.slice(0, 300).forEach(r => {
+                    tbody.innerHTML += `<tr class="hover:bg-gray-50">
+                        <td class="p-2 border font-bold">${r.crimeNo}</td>
+                        <td class="p-2 border text-blue-900 font-semibold">${r.targetNo}</td>
+                        <td class="p-2 border">${r.bParty}</td>
+                        <td class="p-2 border font-medium text-emerald-800 max-w-xs truncate" title="${r.bPartySdr}">${r.bPartySdr || '-'}</td>
+                        <td class="p-2 border">${r.provider}</td>
+                        <td class="p-2 border">${r.type}</td>
+                        <td class="p-2 border font-bold">${r.totalCalls}</td>
+                    </tr>`;
+                });
+            };
+        }
+
         function deleteFile(id) {
-            const tx = db.transaction(['files', 'records'], 'readwrite');
+            const tx = db.transaction(['files', 'records', 'summary'], 'readwrite');
             tx.objectStore('files').delete(id);
             tx.objectStore('records').getAll().onsuccess = (e) => {
                 e.target.result.forEach(r => { if(r.fileId === id) tx.objectStore('records').delete(r.id); });
+            };
+            tx.objectStore('summary').getAll().onsuccess = (e) => {
+                e.target.result.forEach(r => { if(r.fileId === id) tx.objectStore('summary').delete(r.id); });
+            };
+            tx.oncomplete = () => {
                 showToast('ડિલીટ થઈ ગયું!');
                 loadDropdowns(); renderAll();
             };
@@ -449,8 +519,7 @@
                     (!search || r.targetNo.toLowerCase().includes(search) || 
                                 r.otherNo.toLowerCase().includes(search) || 
                                 (r.bPartySdr && r.bPartySdr.toLowerCase().includes(search)) ||
-                                (r.firstCellAddress && r.firstCellAddress.toLowerCase().includes(search)) ||
-                                (r.lastCellAddress && r.lastCellAddress.toLowerCase().includes(search)))
+                                (r.firstCellAddress && r.firstCellAddress.toLowerCase().includes(search)))
                 );
 
                 document.getElementById('cdrRecordCountText').innerText = `કુલ રેકોર્ડ્સ: ${cachedCdrRecords.length}`;
@@ -469,15 +538,15 @@
             pageRecords.forEach(r => {
                 tbody.innerHTML += `<tr class="hover:bg-blue-50">
                     <td class="p-2 border font-bold">${r.crimeNo}</td>
-                    <td class="p-2 border text-blue-900 font-semibold cursor-pointer" onclick="copyText('${r.targetNo}')">${r.targetNo}</td>
-                    <td class="p-2 border cursor-pointer" onclick="copyText('${r.otherNo}')">${r.otherNo}</td>
+                    <td class="p-2 border text-blue-900 font-semibold">${r.targetNo}</td>
+                    <td class="p-2 border">${r.otherNo}</td>
                     <td class="p-2 border font-medium text-emerald-800 max-w-xs truncate" title="${r.bPartySdr}">${r.bPartySdr}</td>
                     <td class="p-2 border">${r.date}</td>
                     <td class="p-2 border font-bold text-gray-900">${r.time}</td>
                     <td class="p-2 border">${r.duration}</td>
                     <td class="p-2 border">${r.type}</td>
-                    <td class="p-2 border max-w-xs font-medium text-purple-900 truncate" title="${r.firstCellAddress}">${r.firstCellAddress}</td>
-                    <td class="p-2 border max-w-xs font-medium text-indigo-900 truncate" title="${r.lastCellAddress}">${r.lastCellAddress}</td>
+                    <td class="p-2 border max-w-xs truncate" title="${r.firstCellAddress}">${r.firstCellAddress}</td>
+                    <td class="p-2 border max-w-xs truncate" title="${r.lastCellAddress}">${r.lastCellAddress}</td>
                 </tr>`;
             });
 
@@ -525,12 +594,6 @@
                     </tr>`;
                 });
             };
-        }
-
-        function copyText(txt) {
-            if(!txt || txt === '-') return;
-            navigator.clipboard.writeText(txt);
-            showToast(`કોપી થયું: ${txt}`);
         }
 
         function showToast(msg) {
