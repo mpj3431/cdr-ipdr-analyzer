@@ -20,7 +20,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">ટાવર એડ્રેસ (First & Last Cell ID Address) સેટઅપ</p>
+                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ અને ડેટા સેવિંગ ફિક્સડ વર્ઝન</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -56,7 +56,7 @@
         <div id="tab-content-home" class="tab-page space-y-6">
             <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-black mb-1">મલ્ટીફાઇલ અપલોડ સેન્ટર</h2>
-                <p class="text-xs text-indigo-200">એકસાથે બહુવિધ Excel/CSV ફાઇલો અપલોડ કરો. ડુપ્લિકેટ ફાઇલો આપોઆપ ટળી જશે.</p>
+                <p class="text-xs text-indigo-200">એકસાથે બહુવિધ Excel/CSV ફાઇલો અપલોડ કરો.</p>
             </div>
 
             <!-- Upload Cards Grid -->
@@ -252,7 +252,7 @@
     <!-- Script Logic -->
     <script>
         let db;
-        const dbName = "CrimeDB_TowerAddress_V12";
+        const dbName = "CrimeDB_MultiUpload_V13";
         let currentPage = 1;
         const pageSize = 100;
         let cachedCdrRecords = [];
@@ -269,6 +269,10 @@
             db = e.target.result;
             loadDropdowns();
             renderAll();
+        };
+
+        request.onerror = function(e) {
+            console.error("IndexedDB error:", e);
         };
 
         function switchTab(tab) {
@@ -317,7 +321,7 @@
                 }
             }
 
-            showToast('મલ્ટીફાઇલ અપલોડ અને મર્જ સફળતાપૂર્વક પૂર્ણ થયું!');
+            showToast('મલ્ટીફાઇલ અપલોડ અને સેવિંગ સફળતાપૂર્વક પૂર્ણ થયું!');
             e.target.reset();
             loadDropdowns();
             renderAll();
@@ -352,7 +356,6 @@
             const duration = getValueByExactTerms(['duration', 'dur', 'sec']);
             const callType = getValueByExactTerms(['call type', 'call_type', 'type']);
             
-            // First Cell ID Address and Last Cell ID Address mapping
             const firstCellAddress = getValueByExactTerms(['first cell id address', 'first_cell_id_address', 'tower address', 'tower_address']);
             const lastCellAddress = getValueByExactTerms(['last cell id address', 'last_cell_id_address']);
 
@@ -479,7 +482,7 @@
             });
 
             const totalPages = Math.ceil(cachedCdrRecords.length / pageSize) || 1;
-            document.getElementById('pageIndicator`innerText = `પેજ ${currentPage} / ${totalPages}`;
+            document.getElementById('pageIndicator').innerText = `પેજ ${currentPage} / ${totalPages}`;
         }
 
         function changeCdrPage(direction) {
