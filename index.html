@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDR, IPDR અને Tower Dump એનાલાઇઝર</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS CDN for Excel parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-900 text-white shadow-lg py-4 px-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="shield-check" class="w-8 h-8 text-indigo-400"></i>
+                <h1 class="text-2xl font-bold tracking-wide">CDR, IPDR & Tower Dump ફોરેન્સિક ટૂલ</h1>
+            </div>
+            <span class="bg-indigo-800 text-indigo-200 text-xs px-3 py-1 rounded-full font-semibold">100% સુરક્ષિત (ઓફલાઇન/લોકલ)</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto flex-1 w-full p-6 space-y-8">
+
+        <!-- File Upload Section -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h2 class="text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-600"></i>
+                નવી ફાઇલો અપલોડ કરો (Upload Files)
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- CDR Card -->
+                <div class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-lg p-5 text-center transition bg-slate-50 hover:bg-indigo-50/30">
+                    <i data-lucide="phone-call" class="w-10 h-10 mx-auto text-indigo-600 mb-2"></i>
+                    <h3 class="font-bold text-slate-700">CDR ફાઇલ</h3>
+                    <p class="text-xs text-slate-500 mb-4">Excel/CSV ફાઇલ પસંદ કરો</p>
+                    <input type="file" id="cdrInput" accept=".xlsx, .xls, .csv" multiple class="hidden" onchange="handleFileUpload(event, 'CDR')">
+                    <label for="cdrInput" class="cursor-pointer bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 transition inline-block">CDR ઉમેરો</label>
+                </div>
+
+                <!-- IPDR Card -->
+                <div class="border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-lg p-5 text-center transition bg-slate-50 hover:bg-teal-50/30">
+                    <i data-lucide="globe" class="w-10 h-10 mx-auto text-teal-600 mb-2"></i>
+                    <h3 class="font-bold text-slate-700">IPDR ફાઇલ</h3>
+                    <p class="text-xs text-slate-500 mb-4">Excel/CSV ફાઇલ પસંદ કરો</p>
+                    <input type="file" id="ipdrInput" accept=".xlsx, .xls, .csv" multiple class="hidden" onchange="handleFileUpload(event, 'IPDR')">
+                    <label for="ipdrInput" class="cursor-pointer bg-teal-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-teal-700 transition inline-block">IPDR ઉમેરો</label>
+                </div>
+
+                <!-- Tower Dump Card -->
+                <div class="border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-lg p-5 text-center transition bg-slate-50 hover:bg-amber-50/30">
+                    <i data-lucide="radio-tower" class="w-10 h-10 mx-auto text-amber-600 mb-2"></i>
+                    <h3 class="font-bold text-slate-700">Tower Dump ફાઇલ</h3>
+                    <p class="text-xs text-slate-500 mb-4">Excel/CSV ફાઇલ પસંદ કરો</p>
+                    <input type="file" id="towerInput" accept=".xlsx, .xls, .csv" multiple class="hidden" onchange="handleFileUpload(event, 'Tower Dump')">
+                    <label for="towerInput" class="cursor-pointer bg-amber-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-amber-700 transition inline-block">Tower Dump ઉમેરો</label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stored Files Management Section -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-slate-700 flex items-center gap-2">
+                    <i data-lucide="folder-archive" class="w-5 h-5 text-indigo-600"></i>
+                    અપલોડ થયેલી ફાઇલોનું લિસ્ટ (Uploaded Files)
+                </h2>
+                <button onclick="clearAllData()" class="text-xs bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded hover:bg-red-100 transition flex items-center gap-1">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> બધો ડેટા ક્લીઅર કરો
+                </button>
+            </div>
+            <div id="fileListContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <p class="text-sm text-slate-400 col-span-3 text-center py-4">હજુ સુધી કોઈ ફાઈલ ઉમેરાઈ નથી.</p>
+            </div>
+        </section>
+
+        <!-- View Individual Files & Triple Common Number Finder Tabs -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-200 bg-slate-50">
+                <button id="tabCommonBtn" onclick="switchTab('common')" class="flex-1 py-3 px-6 text-center font-medium border-b-2 border-indigo-600 text-indigo-600 flex justify-center items-center gap-2">
+                    <i data-lucide="git-merge" class="w-4 h-4"></i>
+                    કોમન નંબર એનાલિસિસ (CDR + IPDR + Tower)
+                </button>
+                <button id="tabIndividualBtn" onclick="switchTab('individual')" class="flex-1 py-3 px-6 text-center font-medium text-slate-500 hover:text-indigo-600 flex justify-center items-center gap-2 border-b-2 border-transparent">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    વ્યક્તિગત ફાઇલ જુઓ (Individual File Viewer)
+                </button>
+            </div>
+
+            <!-- TAB 1: Common Analysis -->
+            <div id="commonTabView" class="p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base">ત્રણેય ડેટાસેટમાં સમાન (Common) આવતા નંબરો</h3>
+                        <p class="text-xs text-slate-500">CDR, IPDR અને Tower Dump માંથી કોમન નીકળતા મોબાઈલ નંબરોનું લિસ્ટ</p>
+                    </div>
+                    <button onclick="runCommonAnalysis()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-5 py-2.5 rounded-lg shadow-sm font-medium transition flex items-center gap-2">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        કોમન નંબર ફિલ્ટર કરો
+                    </button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">
+                        <span class="text-xs text-slate-500 font-medium">ત્રણેયમાં કોમન (CDR+IPDR+Tower)</span>
+                        <div id="countAllThree" class="text-2xl font-extrabold text-indigo-600 mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">
+                        <span class="text-xs text-slate-500 font-medium">CDR & IPDR માં કોમન</span>
+                        <div id="countCdrIpdr" class="text-2xl font-extrabold text-teal-600 mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">
+                        <span class="text-xs text-slate-500 font-medium">CDR & Tower માં કોમન</span>
+                        <div id="countCdrTower" class="text-2xl font-extrabold text-amber-600 mt-1">0</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">
+                        <span class="text-xs text-slate-500 font-medium">IPDR & Tower માં કોમન</span>
+                        <div id="countIpdrTower" class="text-2xl font-extrabold text-purple-600 mt-1">0</div>
+                    </div>
+                </div>
+
+                <!-- Common Numbers Table -->
+                <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 uppercase text-xs">
+                            <tr>
+                                <th class="py-3 px-4">મોબાઇલ નંબર</th>
+                                <th class="py-3 px-4">CDR માં મળ્યો?</th>
+                                <th class="py-3 px-4">IPDR માં મળ્યો?</th>
+                                <th class="py-3 px-4">Tower Dump માં મળ્યો?</th>
+                                <th class="py-3 px-4 text-center">મેચ પ્રકાર</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commonTableBody">
+                            <tr>
+                                <td colspan="5" class="py-6 text-center text-slate-400">એનાલિસિસ શરૂ કરવા માટે ઉપરનું બટન દબાવો.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: Individual File Viewer -->
+            <div id="individualTabView" class="p-6 hidden">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+                    <div class="w-full md:w-1/2">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">જોવા માટે ફાઇલ સિલેક્ટ કરો:</label>
+                        <select id="singleFileSelect" onchange="renderIndividualFile()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 bg-white">
+                            <option value="">-- ફાઇલ પસંદ કરો --</option>
+                        </select>
+                    </div>
+                    <div class="text-right">
+                        <span id="fileRecordCount" class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-md font-medium border border-slate-200 inline-block">કુલ રેકોર્ડ: 0</span>
+                    </div>
+                </div>
+
+                <!-- Table for Selected File Data -->
+                <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-[500px]">
+                    <table class="w-full text-left text-xs text-slate-600 border-collapse">
+                        <thead id="individualTableHead" class="bg-slate-100 text-slate-700 uppercase sticky top-0 border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">ફાઇલ પસંદ નથી કરેલી</th>
+                            </tr>
+                        </thead>
+                        <tbody id="individualTableBody">
+                            <tr>
+                                <td class="py-6 text-center text-slate-400">કૃપા કરીને ઉપરથી કોઈ ફાઇલ પસંદ કરો.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Global Data Store
+        let appData = {
+            files: [] // { id, name, category, records: [] }
+        };
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Save & Load from LocalStorage
+        function saveData() {
+            try {
+                localStorage.setItem('forensic_app_data', JSON.stringify(appData));
+            } catch(e) {
+                console.error("Storage limit reached or error saving", e);
+            }
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('forensic_app_data');
+            if (saved) {
+                try {
+                    appData = JSON.parse(saved);
+                    updateFileListUI();
+                    populateFileDropdown();
+                } catch(e) {
+                    appData = { files: [] };
+                }
+            }
+        }
+
+        // Tab Switcher
+        function switchTab(tab) {
+            const commonTab = document.getElementById('commonTabView');
+            const individualTab = document.getElementById('individualTabView');
+            const tabCommonBtn = document.getElementById('tabCommonBtn');
+            const tabIndividualBtn = document.getElementById('tabIndividualBtn');
+
+            if (tab === 'common') {
+                commonTab.classList.remove('hidden');
+                individualTab.classList.add('hidden');
+                tabCommonBtn.className = "flex-1 py-3 px-6 text-center font-medium border-b-2 border-indigo-600 text-indigo-600 flex justify-center items-center gap-2";
+                tabIndividualBtn.className = "flex-1 py-3 px-6 text-center font-medium text-slate-500 hover:text-indigo-600 flex justify-center items-center gap-2 border-b-2 border-transparent";
+            } else {
+                commonTab.classList.add('hidden');
+                individualTab.classList.remove('hidden');
+                tabIndividualBtn.className = "flex-1 py-3 px-6 text-center font-medium border-b-2 border-indigo-600 text-indigo-600 flex justify-center items-center gap-2";
+                tabCommonBtn.className = "flex-1 py-3 px-6 text-center font-medium text-slate-500 hover:text-indigo-600 flex justify-center items-center gap-2 border-b-2 border-transparent";
+                populateFileDropdown();
+            }
+        }
+
+        // Handle File Uploads
+        function handleFileUpload(event, category) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    appData.files.push({
+                        id: Date.now() + Math.random().toString(36).substr(2, 4),
+                        name: file.name,
+                        category: category,
+                        records: jsonData
+                    });
+
+                    saveData();
+                    updateFileListUI();
+                    populateFileDropdown();
+                };
+                reader.readAsArrayBuffer(file);
+            });
+
+            event.target.value = '';
+        }
+
+        // Update File List UI
+        function updateFileListUI() {
+            const container = document.getElementById('fileListContainer');
+            if (appData.files.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 col-span-3 text-center py-4">હજુ સુધી કોઈ ફાઈલ ઉમેરાઈ નથી.</p>`;
+                return;
+            }
+
+            container.innerHTML = appData.files.map(file => `
+                <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <span class="px-2 py-1 text-[10px] font-bold rounded ${getBadgeColor(file.category)}">${file.category}</span>
+                        <div class="truncate">
+                            <p class="text-xs font-semibold text-slate-700 truncate">${file.name}</p>
+                            <p class="text-[10px] text-slate-400">${file.records.length} રો (Rows)</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteFile('${file.id}')" class="text-slate-400 hover:text-red-600 p-1">
+                        <i data-lucide="trash" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function getBadgeColor(cat) {
+            if (cat === 'CDR') return 'bg-indigo-100 text-indigo-700';
+            if (cat === 'IPDR') return 'bg-teal-100 text-teal-700';
+            return 'bg-amber-100 text-amber-700';
+        }
+
+        function deleteFile(id) {
+            appData.files = appData.files.filter(f => f.id !== id);
+            saveData();
+            updateFileListUI();
+            populateFileDropdown();
+        }
+
+        function clearAllData() {
+            if (confirm("શું તમે બધો જ ફાઈલ ડેટા ડિલીટ કરવા માંગો છો?")) {
+                appData.files = [];
+                saveData();
+                updateFileListUI();
+                populateFileDropdown();
+            }
+        }
+
+        // Populate Individual File Selector
+        function populateFileDropdown() {
+            const select = document.getElementById('singleFileSelect');
+            select.innerHTML = '<option value="">-- ફાઇલ પસંદ કરો --</option>';
+            appData.files.forEach(file => {
+                select.innerHTML += `<option value="${file.id}">${file.name} (${file.category})</option>`;
+            });
+        }
+
+        // Render Individual File Content
+        function renderIndividualFile() {
+            const fileId = document.getElementById('singleFileSelect').value;
+            const tableHead = document.getElementById('individualTableHead');
+            const tableBody = document.getElementById('individualTableBody');
+            const recordCount = document.getElementById('fileRecordCount');
+
+            if (!fileId) {
+                tableHead.innerHTML = '<tr><th class="py-3 px-4">ફાઇલ પસંદ નથી કરેલી</th></tr>';
+                tableBody.innerHTML = '<tr><td class="py-6 text-center text-slate-400">કૃપા કરીને ઉપરથી કોઈ ફાઇલ પસંદ કરો.</td></tr>';
+                recordCount.innerText = 'કુલ રેકોર્ડ: 0';
+                return;
+            }
+
+            const file = appData.files.find(f => f.id === fileId);
+            if (!file || !file.records.length) {
+                tableHead.innerHTML = '<tr><th class="py-3 px-4">ડેટા ઉપલબ્ધ નથી</th></tr>';
+                tableBody.innerHTML = '<tr><td class="py-6 text-center text-slate-400">આ ફાઇલમાં કોઈ ડેટા નથી.</td></tr>';
+                recordCount.innerText = 'કુલ રેકોર્ડ: 0';
+                return;
+            }
+
+            recordCount.innerText = `કુલ રેકોર્ડ: ${file.records.length}`;
+
+            // Get Headers
+            const headers = Object.keys(file.records[0]);
+            tableHead.innerHTML = `<tr>${headers.map(h => `<th class="py-2.5 px-4 bg-slate-100 text-slate-700 border-b font-semibold">${h}</th>`).join('')}</tr>`;
+
+            // Display Top 100 Rows
+            const rows = file.records.slice(0, 100);
+            tableBody.innerHTML = rows.map(row => `
+                <tr class="border-b hover:bg-slate-50">
+                    ${headers.map(h => `<td class="py-2 px-4 text-slate-600 truncate max-w-[200px]">${row[h] !== undefined ? row[h] : ''}</td>`).join('')}
+                </tr>
+            `).join('');
+        }
+
+        // Extract 10-digit mobile numbers from any string
+        function extractPhoneNumbers(text) {
+            if (!text) return [];
+            const str = String(text);
+            const matches = str.match(/(?:\+91|91)?([6-9]\d{9})/g);
+            if (!matches) return [];
+            return matches.map(m => m.slice(-10));
+        }
+
+        // Triple Common Analysis
+        function runCommonAnalysis() {
+            const cdrNumbers = new Set();
+            const ipdrNumbers = new Set();
+            const towerNumbers = new Set();
+
+            appData.files.forEach(file => {
+                file.records.forEach(row => {
+                    const rowText = Object.values(row).join(' ');
+                    const nums = extractPhoneNumbers(rowText);
+                    nums.forEach(n => {
+                        if (file.category === 'CDR') cdrNumbers.add(n);
+                        if (file.category === 'IPDR') ipdrNumbers.add(n);
+                        if (file.category === 'Tower Dump') towerNumbers.add(n);
+                    });
+                });
+            });
+
+            const allUniqueNumbers = new Set([...cdrNumbers, ...ipdrNumbers, ...towerNumbers]);
+            const results = [];
+
+            let countAll3 = 0, countCdrIp = 0, countCdrTw = 0, countIpTw = 0;
+
+            allUniqueNumbers.forEach(num => {
+                const inCdr = cdrNumbers.has(num);
+                const inIpdr = ipdrNumbers.has(num);
+                const inTower = towerNumbers.has(num);
+
+                // Check for matches
+                if (inCdr && inIpdr && inTower) countAll3++;
+                if (inCdr && inIpdr) countCdrIp++;
+                if (inCdr && inTower) countCdrTw++;
+                if (inIpdr && inTower) countIpTw++;
+
+                // Show only numbers present in at least 2 datasets
+                if ((inCdr && inIpdr) || (inCdr && inTower) || (inIpdr && inTower)) {
+                    results.push({
+                        number: num,
+                        inCdr,
+                        inIpdr,
+                        inTower,
+                        matchType: (inCdr && inIpdr && inTower) ? 'ત્રણેયમાં સમાન (Triple Match)' : 'બે ડેટાસેટમાં સમાન'
+                    });
+                }
+            });
+
+            // Update Counts UI
+            document.getElementById('countAllThree').innerText = countAll3;
+            document.getElementById('countCdrIpdr').innerText = countCdrIp;
+            document.getElementById('countCdrTower').innerText = countCdrTw;
+            document.getElementById('countIpdrTower').innerText = countIpTw;
+
+            // Render Table
+            const tbody = document.getElementById('commonTableBody');
+            if (results.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">કોઈ સમાન (Common) નંબર મળ્યા નથી. કૃપા કરીને વિવિધ કેટેગરીની ફાઇલો અપલોડ કરો.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = results.map(r => `
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="py-3 px-4 font-mono font-bold text-slate-800">${r.number}</td>
+                    <td class="py-3 px-4">${r.inCdr ? '<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold">હા</span>' : '<span class="text-xs text-slate-300">ના</span>'}</td>
+                    <td class="py-3 px-4">${r.inIpdr ? '<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold">હા</span>' : '<span class="text-xs text-slate-300">ના</span>'}</td>
+                    <td class="py-3 px-4">${r.inTower ? '<span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold">હા</span>' : '<span class="text-xs text-slate-300">ના</span>'}</td>
+                    <td class="py-3 px-4 text-center">
+                        <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${r.inCdr && r.inIpdr && r.inTower ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' : 'bg-slate-100 text-slate-600'}">
+                            ${r.matchType}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize App
+        window.onload = function() {
+            loadData();
+        };
+    </script>
+</body>
+</html>
