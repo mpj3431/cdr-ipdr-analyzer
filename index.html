@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS for Excel Reading -->
+    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- jsPDF & AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -23,12 +23,11 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">First Cell ID Address & B-Party Name/Address સપોર્ટ સાથે</p>
+                    <p class="text-xs text-slate-400">મોબાઇલ ઓપ્ટિમાઇઝ્ડ એડિશન</p>
                 </div>
             </div>
-            <button onclick="openStorageModal()" class="bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 px-3 py-1.5 rounded border border-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-database text-amber-400"></i>
-                <span id="storageInfoText">સ્ટોરેજ: ચકાસી રહ્યા છીએ...</span>
+            <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
+                <i class="fa-solid fa-trash"></i> ડેટા રીસેટ કરો
             </button>
         </div>
     </header>
@@ -62,17 +61,16 @@
         <!-- 1. HOME & DIRECT UPLOAD TAB -->
         <div id="tab-content-home" class="tab-page space-y-6">
             <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-lg">
-                <h2 class="text-2xl font-black mb-2">ડેટા અપલોડ અને મેનેજમેન્ટ સેન્ટર</h2>
-                <p class="text-xs text-indigo-200">CDR, IPDR અને ટાવર ડમ્પની Excel/CSV ફાઇલો ગુના નંબર સાથે અપલોડ કરો.</p>
+                <h2 class="text-2xl font-black mb-2">ડેટા અપલોડ સેન્ટર</h2>
+                <p class="text-xs text-indigo-200">CDR, IPDR અને ટાવર ડમ્પ ફાઇલો ગુના નંબર સાથે અહીં અપલોડ કરો.</p>
             </div>
 
             <!-- Upload Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                
                 <!-- CDR Upload Card -->
                 <div class="bg-white p-5 rounded-xl border border-blue-200 shadow-sm">
                     <div class="flex items-center gap-2 mb-3 text-blue-800 font-bold">
-                        <i class="fa-solid fa-phone-volume text-lg"></i> CDR ફાઇલ અપલોડ કરો
+                        <i class="fa-solid fa-phone-volume text-lg"></i> CDR ફાઇલ અપલોડ
                     </div>
                     <form onsubmit="handleDirectUpload(event, 'cdr')" class="space-y-3">
                         <div>
@@ -90,7 +88,7 @@
                 <!-- IPDR Upload Card -->
                 <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm">
                     <div class="flex items-center gap-2 mb-3 text-emerald-800 font-bold">
-                        <i class="fa-solid fa-globe text-lg"></i> IPDR ફાઇલ અપલોડ કરો
+                        <i class="fa-solid fa-globe text-lg"></i> IPDR ફાઇલ અપલોડ
                     </div>
                     <form onsubmit="handleDirectUpload(event, 'ipdr')" class="space-y-3">
                         <div>
@@ -108,7 +106,7 @@
                 <!-- Tower Dump Upload Card -->
                 <div class="bg-white p-5 rounded-xl border border-purple-200 shadow-sm">
                     <div class="flex items-center gap-2 mb-3 text-purple-800 font-bold">
-                        <i class="fa-solid fa-tower-cell text-lg"></i> ટાવર ડમ્પ અપલોડ કરો
+                        <i class="fa-solid fa-tower-cell text-lg"></i> ટાવર ડમ્પ અપલોડ
                     </div>
                     <form onsubmit="handleDirectUpload(event, 'tower')" class="space-y-3">
                         <div>
@@ -122,12 +120,11 @@
                         <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs py-2 rounded font-bold">ટાવર ડમ્પ સેવ કરો</button>
                     </form>
                 </div>
-
             </div>
 
             <!-- Stored Files List -->
             <div class="bg-white p-4 rounded-xl border">
-                <h3 class="font-bold text-sm text-gray-800 mb-3">સ્ટોરેજમાં સેવ થયેલી ફાઇલો</h3>
+                <h3 class="font-bold text-sm text-gray-800 mb-3">અપલોડ થયેલી ફાઇલોનું લિસ્ટ</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-xs text-left">
                         <thead class="bg-gray-100 text-gray-700">
@@ -150,19 +147,15 @@
             <div class="bg-blue-900 text-white rounded-xl p-4 shadow flex justify-between items-center">
                 <div>
                     <span class="bg-blue-600 text-xs uppercase px-2 py-0.5 rounded font-bold">CDR વિશ્લેષણ</span>
-                    <h2 class="text-xl font-bold mt-1">કોલ ડિટેઇલ રેકોર્ડ (CDR) ડેશબોર્ડ</h2>
+                    <h2 class="text-xl font-bold mt-1">કોલ ડિટેઇલ રેકોર્ડ ડેશબોર્ડ</h2>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="exportToExcel('cdr')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
-                        <i class="fa-solid fa-file-excel"></i> Excel ડાઉનલોડ
-                    </button>
-                    <button onclick="exportToPDF('cdr')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
-                        <i class="fa-solid fa-file-pdf"></i> PDF ડાઉનલોડ
-                    </button>
+                    <button onclick="exportToExcel('cdr')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded text-xs">Excel</button>
+                    <button onclick="exportToPDF('cdr')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded text-xs">PDF</button>
                 </div>
             </div>
 
-            <!-- Filters for Crime and Number -->
+            <!-- Filters -->
             <div class="bg-white rounded-xl p-3 border grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">ગુના નંબર પસંદ કરો:</label>
@@ -173,18 +166,18 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">મોબાઇલ નંબર પસંદ કરો:</label>
                     <select id="cdrNumberSelect" onchange="renderCdrData()" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold text-blue-900">
-                        <option value="">તમામ નંબરો (પ્રથમ ગુનો પસંદ કરો)</option>
+                        <option value="">તમામ નંબરો</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">સર્ચ કરો:</label>
-                    <input type="text" id="cdrSearch" oninput="renderCdrData()" placeholder="નંબર, નામ, લોકેશન કે B-પાર્ટી સર્ચ..." class="w-full text-xs border rounded p-1.5">
+                    <input type="text" id="cdrSearch" oninput="renderCdrData()" placeholder="નંબર, નામ, સરનામું સર્ચ..." class="w-full text-xs border rounded p-1.5">
                 </div>
             </div>
 
             <!-- Table -->
             <div class="bg-white rounded-xl border overflow-hidden shadow-sm">
-                <div class="overflow-x-auto max-h-[500px]">
+                <div class="overflow-x-auto max-h-[450px]">
                     <table class="min-w-full text-xs text-left">
                         <thead class="bg-blue-800 text-white sticky top-0 z-10">
                             <tr>
@@ -196,8 +189,8 @@
                                 <th class="p-2.5 border border-blue-700 whitespace-nowrap">તારીખ & સમય</th>
                                 <th class="p-2.5 border border-blue-700 whitespace-nowrap">પ્રકાર</th>
                                 <th class="p-2.5 border border-blue-700 whitespace-nowrap">ડ્યુરેશન</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">IMEI નંબર</th>
-                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">જગ્યા/લોકેશન (First Cell ID Address)</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">IMEI</th>
+                                <th class="p-2.5 border border-blue-700 whitespace-nowrap">First Cell ID Address (જગ્યા)</th>
                             </tr>
                         </thead>
                         <tbody id="cdrTableBody" class="divide-y text-gray-700"></tbody>
@@ -209,16 +202,8 @@
         <!-- 3. IPDR DASHBOARD -->
         <div id="tab-content-ipdr" class="tab-page space-y-4 hidden">
             <div class="bg-emerald-900 text-white rounded-xl p-4 shadow flex justify-between items-center">
-                <div>
-                    <span class="bg-emerald-600 text-xs uppercase px-2 py-0.5 rounded font-bold">IPDR વિશ્લેષણ</span>
-                    <h2 class="text-xl font-bold mt-1">IP Detail Record ડેશબોર્ડ</h2>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="exportToExcel('ipdr')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Excel ડાઉનલોડ</button>
-                    <button onclick="exportToPDF('ipdr')" class="bg-rose-600 text-white px-3 py-1 rounded text-xs">PDF ડાઉનલોડ</button>
-                </div>
+                <h2 class="text-xl font-bold">IP Detail Record ડેશબોર્ડ</h2>
             </div>
-            <!-- IPDR Table -->
             <div class="bg-white rounded-xl border overflow-hidden">
                 <div class="overflow-x-auto max-h-96">
                     <table class="min-w-full text-xs text-left">
@@ -240,16 +225,8 @@
         <!-- 4. TOWER DUMP DASHBOARD -->
         <div id="tab-content-tower" class="tab-page space-y-4 hidden">
             <div class="bg-purple-900 text-white rounded-xl p-4 shadow flex justify-between items-center">
-                <div>
-                    <span class="bg-purple-600 text-xs uppercase px-2 py-0.5 rounded font-bold">ટાવર ડમ્પ</span>
-                    <h2 class="text-xl font-bold mt-1">Tower Dump ડેશબોર્ડ</h2>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="exportToExcel('tower')" class="bg-emerald-600 text-white px-3 py-1 rounded text-xs">Excel ડાઉનલોડ</button>
-                    <button onclick="exportToPDF('tower')" class="bg-rose-600 text-white px-3 py-1 rounded text-xs">PDF ડાઉનલોડ</button>
-                </div>
+                <h2 class="text-xl font-bold">Tower Dump ડેશબોર્ડ</h2>
             </div>
-            <!-- Tower Table -->
             <div class="bg-white rounded-xl border overflow-hidden">
                 <div class="overflow-x-auto max-h-96">
                     <table class="min-w-full text-xs text-left">
@@ -274,7 +251,7 @@
                 <h2 class="text-xl font-bold">CDR + IPDR + Tower Dump કોમન નંબર શોધક</h2>
             </div>
             <div class="bg-white p-4 rounded-xl border flex justify-between items-center">
-                <span class="text-xs font-bold text-gray-700">ત્રણેય ફાઇલોમાંથી સમાન (Common) નંબરો:</span>
+                <span class="text-xs font-bold text-gray-700">ત્રણેય ફાઇલોમાંથી સમાન નંબરો:</span>
                 <button onclick="runCrossAnalysis()" class="bg-amber-600 text-white text-xs px-3 py-1.5 rounded">એનાલિસિસ કરો</button>
             </div>
             <div class="bg-white rounded-xl border overflow-hidden">
@@ -293,27 +270,17 @@
 
     </main>
 
-    <!-- Storage Modal -->
-    <div id="storageModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl max-w-md w-full p-5 shadow-2xl">
-            <h3 class="font-bold text-base text-gray-800 mb-3">સ્ટોરેજ મેનેજર</h3>
-            <p id="modalFileCount" class="text-xs text-gray-600 mb-4">કુલ સેવ ફાઇલો: 0</p>
-            <div class="flex justify-end gap-2">
-                <button onclick="clearAllData()" class="bg-rose-600 text-white text-xs px-3 py-1.5 rounded">બધો ડેટા ડિલીટ કરો</button>
-                <button onclick="closeStorageModal()" class="bg-gray-200 text-gray-800 text-xs px-3 py-1.5 rounded">બંધ કરો</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2 rounded-lg text-xs transform translate-y-20 opacity-0 transition-all z-50">
-        <span id="toastMsg">સેવ થઈ ગયું!</span>
+        <span id="toastMsg">સફળતાપૂર્વક અપડેટ થયું!</span>
     </div>
 
     <!-- Script Logic -->
     <script>
         let db;
-        const request = indexedDB.open("CrimeAnalyzerDB_V3", 1);
+        // Using Fresh Database Name to Prevent Browser Crashes
+        const dbName = "CrimeDB_Light_V4";
+        const request = indexedDB.open(dbName, 1);
 
         request.onupgradeneeded = function(e) {
             db = e.target.result;
@@ -323,9 +290,12 @@
 
         request.onsuccess = function(e) {
             db = e.target.result;
-            updateStorageStats();
             loadDropdowns();
             renderAll();
+        };
+
+        request.onerror = function() {
+            alert("ડેટાબેઝ ઓપન કરવામાં ભૂલ થઈ. કૃપા કરીને બ્રાઉઝર કેશ સાફ કરો.");
         };
 
         function switchTab(tab) {
@@ -354,20 +324,22 @@
             const fileRecord = { fileName: file.name, crimeNo, fileType: type, rowCount: data.length };
             const tx = db.transaction(['files', 'records'], 'readwrite');
             const fileStore = tx.objectStore('files');
-            const fileId = await new Promise(res => {
-                fileStore.add(fileRecord).onsuccess = (ev) => res(ev.target.result);
-            });
+            
+            fileStore.add(fileRecord).onsuccess = (ev) => {
+                const fileId = ev.target.result;
+                const recordStore = tx.objectStore('records');
+                // Process in Chunks for Mobile Safety
+                data.forEach(row => {
+                    recordStore.add(mapRow(row, type, crimeNo, fileId));
+                });
+            };
 
-            const recordStore = tx.objectStore('records');
-            data.forEach(row => {
-                recordStore.add(mapRow(row, type, crimeNo, fileId));
-            });
-
-            showToast('ફાઇલ સફળતાપૂર્વક અપલોડ થઈ!');
-            e.target.reset();
-            updateStorageStats();
-            loadDropdowns();
-            renderAll();
+            tx.oncomplete = () => {
+                showToast('ફાઇલ સફળતાપૂર્વક અપલોડ થઈ!');
+                e.target.reset();
+                loadDropdowns();
+                renderAll();
+            };
         }
 
         function readExcelFile(file) {
@@ -410,6 +382,7 @@
         }
 
         function renderHomeFiles() {
+            if(!db) return;
             db.transaction('files', 'readonly').objectStore('files').getAll().onsuccess = (e) => {
                 const tbody = document.getElementById('homeFileListBody');
                 tbody.innerHTML = '';
@@ -431,11 +404,12 @@
             tx.objectStore('records').getAll().onsuccess = (e) => {
                 e.target.result.forEach(r => { if(r.fileId === id) tx.objectStore('records').delete(r.id); });
                 showToast('ડિલીટ થઈ ગયું!');
-                updateStorageStats(); loadDropdowns(); renderAll();
+                loadDropdowns(); renderAll();
             };
         }
 
         function loadDropdowns() {
+            if(!db) return;
             db.transaction('files', 'readonly').objectStore('files').getAll().onsuccess = (e) => {
                 const files = e.target.result || [];
                 const crimes = [...new Set(files.map(f => f.crimeNo))];
@@ -458,6 +432,7 @@
         }
 
         function renderCdrData() {
+            if(!db) return;
             const crime = document.getElementById('cdrCrimeSelect').value;
             const number = document.getElementById('cdrNumberSelect').value;
             const search = document.getElementById('cdrSearch').value.toLowerCase();
@@ -474,7 +449,7 @@
                                 (r.location && r.location.toLowerCase().includes(search)))
                 );
 
-                records.forEach(r => {
+                records.slice(0, 500).forEach(r => { // Limit render for mobile performance
                     tbody.innerHTML += `<tr class="hover:bg-blue-50">
                         <td class="p-2 border font-bold">${r.crimeNo}</td>
                         <td class="p-2 border text-blue-900 font-semibold cursor-pointer" onclick="copyText('${r.targetNo}')">${r.targetNo}</td>
@@ -492,6 +467,7 @@
         }
 
         function renderIpdrData() {
+            if(!db) return;
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
                 const tbody = document.getElementById('ipdrTableBody');
                 tbody.innerHTML = '';
@@ -508,6 +484,7 @@
         }
 
         function renderTowerData() {
+            if(!db) return;
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
                 const tbody = document.getElementById('towerTableBody');
                 tbody.innerHTML = '';
@@ -524,6 +501,7 @@
         }
 
         function runCrossAnalysis() {
+            if(!db) return;
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
                 const records = e.target.result || [];
                 const cdr = new Set(records.filter(r => r.fileType === 'cdr').map(r => r.targetNo));
@@ -557,24 +535,11 @@
             setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2000);
         }
 
-        function updateStorageStats() {
-            db.transaction('files', 'readonly').objectStore('files').getAll().onsuccess = (e) => {
-                const count = (e.target.result || []).length;
-                document.getElementById('storageInfoText').innerText = `સ્ટોરેજ: ${count} ફાઇલો`;
-                document.getElementById('modalFileCount').innerText = `કુલ સેવ ફાઇલો: ${count}`;
-            };
-        }
-
-        function openStorageModal() { document.getElementById('storageModal').classList.remove('hidden'); }
-        function closeStorageModal() { document.getElementById('storageModal').classList.add('hidden'); }
-
         function clearAllData() {
-            if(!confirm('બધો ડેટા ડિલીટ કરવો છે?')) return;
-            const tx = db.transaction(['files', 'records'], 'readwrite');
-            tx.objectStore('files').clear();
-            tx.objectStore('records').clear();
-            showToast('ડેટા ડિલીટ થયો!');
-            closeStorageModal(); updateStorageStats(); loadDropdowns(); renderAll();
+            if(!confirm('શું તમે સેવ કરેલો તમામ ડેટા ડિલીટ કરવા માંગો છો?')) return;
+            indexedDB.deleteDatabase(dbName);
+            alert("તમામ ડેટા ડિલીટ થઈ ગયો છે. પેજ રીલોડ થશે.");
+            location.reload();
         }
 
         function exportToExcel(type) {
