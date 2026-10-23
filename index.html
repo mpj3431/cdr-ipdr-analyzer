@@ -20,7 +20,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">CdrNo, SDR અને First Cell ID Address સેટઅપ</p>
+                    <p class="text-xs text-slate-400">B Party SDR અને First Cell ID Address સેટઅપ</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -173,11 +173,11 @@
                         <thead class="bg-blue-800 text-white sticky top-0 z-10">
                             <tr>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">ગુના નંબર</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">A-પાર્ટી (CdrNo - Target)</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">B-પાર્ટી (CdrNo - Other)</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">SDR: B-પાર્ટીનું નામ</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">SDR: B-પાર્ટીનું સરનામું</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">તારીખ & સમય</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">A-પાર્ટી (CdrNo)</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">B-પાર્ટી (CdrNo)</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">B Party SDR (નામ તથા સરનામું)</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">તારીખ</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">સમય</th>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">પ્રકાર</th>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">ડ્યુરેશન</th>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">IMEI</th>
@@ -252,7 +252,7 @@
     <!-- Script Logic -->
     <script>
         let db;
-        const dbName = "CrimeDB_Mapping_V6";
+        const dbName = "CrimeDB_Mapping_V7";
         let currentPage = 1;
         const pageSize = 100;
         let cachedCdrRecords = [];
@@ -334,17 +334,26 @@
                 return k ? String(row[k]).trim() : '';
             };
 
+            const rawDate = get(['date', 'call_date', 'datetime']);
+            const rawTime = get(['time', 'call_time']);
+
+            const name = get(['b_party_name', 'b party name', 'called_name', 'b_name', 'name', 'party name', 'sdr_name']);
+            const address = get(['b_party_address', 'b party address', 'called_address', 'b_address', 'address', 'party address', 'sdr_address']);
+            
+            // Combine Name and Address into B Party SDR
+            let bPartySdr = '-';
+            if(name && address) bPartySdr = `${name}, ${address}`;
+            else if(name) bPartySdr = name;
+            else if(address) bPartySdr = address;
+
             return {
                 fileId, fileType: type, crimeNo,
-                // CdrNo: A Party & B Party
                 targetNo: get(['calling', 'a_party', 'target', 'msisdn', 'source_ip', 'mobile', 'a party', 'cdrno', 'a-party']),
                 otherNo: get(['called', 'b_party', 'other', 'destination_ip', 'b party', 'other_party', 'b-party']),
-                // SDR: B Party Name & Address
-                bPartyName: get(['b_party_name', 'b party name', 'called_name', 'b_name', 'name', 'party name', 'sdr_name']),
-                bPartyAddress: get(['b_party_address', 'b party address', 'called_address', 'b_address', 'address', 'party address', 'sdr_address']),
-                // First Cell ID Address (Location)
+                bPartySdr: bPartySdr,
+                date: rawDate,
+                time: rawTime,
                 location: get(['first_cell_id_address', 'first cell id', 'cell_address', 'location', 'tower', 'address', 'site', 'cell id address']),
-                dateTime: get(['date', 'time', 'datetime', 'call_date']),
                 duration: get(['duration', 'dur', 'sec']),
                 type: get(['type', 'call_type', 'protocol']),
                 imei: get(['imei', 'device', 'device_id'])
@@ -426,8 +435,7 @@
                     (!number || r.targetNo === number) &&
                     (!search || r.targetNo.toLowerCase().includes(search) || 
                                 r.otherNo.toLowerCase().includes(search) || 
-                                (r.bPartyName && r.bPartyName.toLowerCase().includes(search)) ||
-                                (r.bPartyAddress && r.bPartyAddress.toLowerCase().includes(search)) ||
+                                (r.bPartySdr && r.bPartySdr.toLowerCase().includes(search)) ||
                                 (r.location && r.location.toLowerCase().includes(search)))
                 );
 
@@ -449,12 +457,12 @@
                     <td class="p-2 border font-bold">${r.crimeNo}</td>
                     <td class="p-2 border text-blue-900 font-semibold cursor-pointer" onclick="copyText('${r.targetNo}')">${r.targetNo}</td>
                     <td class="p-2 border cursor-pointer" onclick="copyText('${r.otherNo}')">${r.otherNo}</td>
-                    <td class="p-2 border font-medium text-emerald-800">${r.bPartyName || '-'}</td>
-                    <td class="p-2 border max-w-xs truncate" title="${r.bPartyAddress || ''}">${r.bPartyAddress || '-'}</td>
-                    <td class="p-2 border">${r.dateTime}</td>
-                    <td class="p-2 border">${r.type}</td>
-                    <td class="p-2 border">${r.duration}</td>
-                    <td class="p-2 border cursor-pointer" onclick="copyText('${r.imei}')">${r.imei}</td>
+                    <td class="p-2 border font-medium text-emerald-800">${r.bPartySdr || '-'}</td>
+                    <td class="p-2 border">${r.date || '-'}</td>
+                    <td class="p-2 border font-bold text-gray-900">${r.time || '-'}</td>
+                    <td class="p-2 border">${r.type || '-'}</td>
+                    <td class="p-2 border">${r.duration || '-'}</td>
+                    <td class="p-2 border cursor-pointer" onclick="copyText('${r.imei}')">${r.imei || '-'}</td>
                     <td class="p-2 border max-w-sm font-medium text-purple-900" title="${r.location}">${r.location || '-'}</td>
                 </tr>`;
             });
@@ -482,7 +490,7 @@
                         <td class="p-2 border text-emerald-900 font-semibold">${r.targetNo}</td>
                         <td class="p-2 border">${r.targetNo}</td>
                         <td class="p-2 border">${r.otherNo}</td>
-                        <td class="p-2 border">${r.dateTime}</td>
+                        <td class="p-2 border">${r.date || ''} ${r.time || ''}</td>
                     </tr>`;
                 });
             };
@@ -497,8 +505,8 @@
                     tbody.innerHTML += `<tr class="hover:bg-purple-50">
                         <td class="p-2 border font-bold">${r.crimeNo}</td>
                         <td class="p-2 border text-purple-900 font-semibold">${r.targetNo}</td>
-                        <td class="p-2 border">${r.imei}</td>
-                        <td class="p-2 border">${r.dateTime}</td>
+                        <td class="p-2 border">${r.imei || '-'}</td>
+                        <td class="p-2 border">${r.date || ''} ${r.time || ''}</td>
                         <td class="p-2 border">${r.type || '-'}</td>
                     </tr>`;
                 });
