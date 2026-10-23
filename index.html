@@ -20,7 +20,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">ફાસ્ટ પેજિનેશન અને લો-મેમરી મોડ</p>
+                    <p class="text-xs text-slate-400">CdrNo, SDR અને First Cell ID Address સેટઅપ</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -56,7 +56,7 @@
         <div id="tab-content-home" class="tab-page space-y-6">
             <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-black mb-1">ડેટા અપલોડ સેન્ટર</h2>
-                <p class="text-xs text-indigo-200">મોટી ફાઇલો પણ બિલકુલ હેંગ થયા વગર અપલોડ થશે.</p>
+                <p class="text-xs text-indigo-200">ગુના નંબર સાથે CDR, IPDR અને ટાવર ડમ્પ ફાઇલો અપલોડ કરો.</p>
             </div>
 
             <!-- Upload Cards Grid -->
@@ -75,7 +75,7 @@
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Excel/CSV ફાઇલ *</label>
                             <input type="file" id="homeFileCdr" required accept=".xlsx, .xls, .csv" class="w-full text-xs text-gray-500">
                         </div>
-                        <button type="submit" id="btnCdrUpload" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded font-bold">CDR સેવ કરો</button>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded font-bold">CDR સેવ કરો</button>
                     </form>
                 </div>
 
@@ -93,7 +93,7 @@
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Excel/CSV ફાઇલ *</label>
                             <input type="file" id="homeFileIpdr" required accept=".xlsx, .xls, .csv" class="w-full text-xs text-gray-500">
                         </div>
-                        <button type="submit" id="btnIpdrUpload" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded font-bold">IPDR સેવ કરો</button>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded font-bold">IPDR સેવ કરો</button>
                     </form>
                 </div>
 
@@ -111,7 +111,7 @@
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Excel/CSV ફાઇલ *</label>
                             <input type="file" id="homeFileTower" required accept=".xlsx, .xls, .csv" class="w-full text-xs text-gray-500">
                         </div>
-                        <button type="submit" id="btnTowerUpload" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs py-2 rounded font-bold">ટાવર ડમ્પ સેવ કરો</button>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs py-2 rounded font-bold">ટાવર ડમ્પ સેવ કરો</button>
                     </form>
                 </div>
             </div>
@@ -173,15 +173,15 @@
                         <thead class="bg-blue-800 text-white sticky top-0 z-10">
                             <tr>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">ગુના નંબર</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">A-પાર્ટી (Target)</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">B-પાર્ટી (Other)</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">B-પાર્ટીનું નામ</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">B-પાર્ટીનું સરનામું</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">A-પાર્ટી (CdrNo - Target)</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">B-પાર્ટી (CdrNo - Other)</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">SDR: B-પાર્ટીનું નામ</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">SDR: B-પાર્ટીનું સરનામું</th>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">તારીખ & સમય</th>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">પ્રકાર</th>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">ડ્યુરેશન</th>
                                 <th class="p-2 border border-blue-700 whitespace-nowrap">IMEI</th>
-                                <th class="p-2 border border-blue-700 whitespace-nowrap">First Cell ID Address (જગ્યા)</th>
+                                <th class="p-2 border border-blue-700 whitespace-nowrap">First Cell ID Address (જગ્યા/લોકેશન)</th>
                             </tr>
                         </thead>
                         <tbody id="cdrTableBody" class="divide-y text-gray-700"></tbody>
@@ -189,9 +189,9 @@
                 </div>
                 <!-- Pagination Controls -->
                 <div class="p-3 bg-gray-50 border-t flex justify-between items-center text-xs">
-                    <button onclick="changeCdrPage(-1)" id="btnPrevPage" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⬅️ અગાઉનું (Prev)</button>
+                    <button onclick="changeCdrPage(-1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⬅️ અગાઉનું (Prev)</button>
                     <span id="pageIndicator" class="font-bold text-gray-700">પેજ 1</span>
-                    <button onclick="changeCdrPage(1)" id="btnNextPage" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">આગળનું (Next) ➡️</button>
+                    <button onclick="changeCdrPage(1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">આગળનું (Next) ➡️</button>
                 </div>
             </div>
         </div>
@@ -252,9 +252,9 @@
     <!-- Script Logic -->
     <script>
         let db;
-        const dbName = "CrimeDB_Fast_V5";
+        const dbName = "CrimeDB_Mapping_V6";
         let currentPage = 1;
-        const pageSize = 100; // Render only 100 records at a time to prevent hanging
+        const pageSize = 100;
         let cachedCdrRecords = [];
 
         const request = indexedDB.open(dbName, 1);
@@ -291,7 +291,7 @@
             if(!fileInput.files.length) return;
             const file = fileInput.files[0];
 
-            showToast('ફાઇલ પ્રોસેસ થઇ રહી છે, મહેરબાની કરીને રાહ જુઓ...');
+            showToast('ફાઇલ પ્રોસેસ થઇ રહી છે...');
 
             const data = await readExcelFile(file);
             const fileRecord = { fileName: file.name, crimeNo, fileType: type, rowCount: data.length };
@@ -303,7 +303,6 @@
                 const fileId = ev.target.result;
                 const recordStore = tx.objectStore('records');
                 
-                // Add in small chunks to keep browser responsive
                 for(let i = 0; i < data.length; i++) {
                     recordStore.add(mapRow(data[i], type, crimeNo, fileId));
                 }
@@ -321,7 +320,7 @@
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const wb = XLSX.read(e.target.result, { type: 'binary', sheetRows: 20000 }); // Limit max rows per upload if needed
+                    const wb = XLSX.read(e.target.result, { type: 'binary', sheetRows: 25000 });
                     resolve(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" }));
                 };
                 reader.readAsBinaryString(file);
@@ -337,11 +336,14 @@
 
             return {
                 fileId, fileType: type, crimeNo,
-                targetNo: get(['calling', 'a_party', 'target', 'msisdn', 'source_ip', 'mobile', 'a party']),
-                otherNo: get(['called', 'b_party', 'other', 'destination_ip', 'b party', 'other_party']),
-                bPartyName: get(['b_party_name', 'b party name', 'called_name', 'b_name', 'name']),
-                bPartyAddress: get(['b_party_address', 'b party address', 'called_address', 'b_address', 'address']),
-                location: get(['first_cell_id_address', 'first cell id', 'cell_address', 'location', 'tower', 'address', 'site']),
+                // CdrNo: A Party & B Party
+                targetNo: get(['calling', 'a_party', 'target', 'msisdn', 'source_ip', 'mobile', 'a party', 'cdrno', 'a-party']),
+                otherNo: get(['called', 'b_party', 'other', 'destination_ip', 'b party', 'other_party', 'b-party']),
+                // SDR: B Party Name & Address
+                bPartyName: get(['b_party_name', 'b party name', 'called_name', 'b_name', 'name', 'party name', 'sdr_name']),
+                bPartyAddress: get(['b_party_address', 'b party address', 'called_address', 'b_address', 'address', 'party address', 'sdr_address']),
+                // First Cell ID Address (Location)
+                location: get(['first_cell_id_address', 'first cell id', 'cell_address', 'location', 'tower', 'address', 'site', 'cell id address']),
                 dateTime: get(['date', 'time', 'datetime', 'call_date']),
                 duration: get(['duration', 'dur', 'sec']),
                 type: get(['type', 'call_type', 'protocol']),
@@ -425,6 +427,7 @@
                     (!search || r.targetNo.toLowerCase().includes(search) || 
                                 r.otherNo.toLowerCase().includes(search) || 
                                 (r.bPartyName && r.bPartyName.toLowerCase().includes(search)) ||
+                                (r.bPartyAddress && r.bPartyAddress.toLowerCase().includes(search)) ||
                                 (r.location && r.location.toLowerCase().includes(search)))
                 );
 
@@ -446,13 +449,13 @@
                     <td class="p-2 border font-bold">${r.crimeNo}</td>
                     <td class="p-2 border text-blue-900 font-semibold cursor-pointer" onclick="copyText('${r.targetNo}')">${r.targetNo}</td>
                     <td class="p-2 border cursor-pointer" onclick="copyText('${r.otherNo}')">${r.otherNo}</td>
-                    <td class="p-2 border">${r.bPartyName || '-'}</td>
+                    <td class="p-2 border font-medium text-emerald-800">${r.bPartyName || '-'}</td>
                     <td class="p-2 border max-w-xs truncate" title="${r.bPartyAddress || ''}">${r.bPartyAddress || '-'}</td>
                     <td class="p-2 border">${r.dateTime}</td>
                     <td class="p-2 border">${r.type}</td>
                     <td class="p-2 border">${r.duration}</td>
                     <td class="p-2 border cursor-pointer" onclick="copyText('${r.imei}')">${r.imei}</td>
-                    <td class="p-2 border max-w-sm font-medium text-slate-800" title="${r.location}">${r.location || '-'}</td>
+                    <td class="p-2 border max-w-sm font-medium text-purple-900" title="${r.location}">${r.location || '-'}</td>
                 </tr>`;
             });
 
@@ -518,7 +521,7 @@
         function clearAllData() {
             if(!confirm('શું તમે સેવ કરેલો તમામ ડેટા ડિલીટ કરવા માંગો છો?')) return;
             indexedDB.deleteDatabase(dbName);
-            alert("તમામ ડેટા ડિલીટ થઈ ગયો છે. પેજ રીલોડ થશે.");
+            alert("ડેટા ડિલીટ થઈ ગયો છે. પેજ રીલોડ થશે.");
             location.reload();
         }
     </script>
