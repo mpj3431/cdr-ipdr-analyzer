@@ -367,10 +367,14 @@
 
                 try {
                     const workbook = await readWorkbook(file);
-                    let sheetName = workbook.SheetNames.includes('Mapping') ? 'Mapping' : workbook.SheetNames[0];
-                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+                    const { rows: sheetData, headers } = extractRows(workbook);
+                    const fileTarget = (file.name.match(/(?<!\d)(\d{10})(?!\d)/) || [])[1] || '';
                     if(!sheetData.length) { failed++; logUpload(`❌ ${file.name} – ફાઇલ ખાલી છે`, 'text-rose-700'); continue; }
-                    const targetNo = mapRow(sheetData[0], type, crimeNo, 0).targetNo;
+                    const probe = sheetData.slice(0, 50).map(r => mapRow(r, type, crimeNo, 0, fileTarget));
+                    if (!probe.some(r => r.otherNo || r.date || r.time)) {
+                        failed++; logUpload(`❌ ${file.name} – કૉલમ ઓળખાઈ નહીં. મળેલા હેડર: ${headers.slice(0, 15).join(' | ')}`, 'text-rose-700'); continue;
+                    }
+                    const targetNo = probe[0].targetNo;
                     if (existingFiles.some(f => f.crimeNo === crimeNo && f.fileType === type && f.rowCount === sheetData.length && (f.targetNo || '') === targetNo)) {
                         skipped++; logUpload(`⚠️ ${file.name} (${targetNo}) – આ નંબરનો આ જ ડેટા પહેલેથી સેવ છે (સ્કીપ)`, 'text-amber-700'); continue;
                     }
@@ -381,7 +385,7 @@
                         tx.objectStore('files').add({ fileName: file.name, crimeNo, fileType: type, rowCount: sheetData.length, targetNo }).onsuccess = (ev) => {
                             const fileId = ev.target.result;
                             const rs = tx.objectStore('records');
-                            sheetData.forEach(row => rs.add(mapRow(row, type, crimeNo, fileId)));
+                            sheetData.forEach(row => rs.add(mapRow(row, type, crimeNo, fileId, fileTarget)));
                         };
                         tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
                     });
@@ -398,29 +402,57 @@
             renderAll();
         }
 
-                function mapRow(row, type, crimeNo, fileId) {
-            const keys = Object.keys(row);
-            const getVal = (terms) => {
-                const k = keys.find(key => terms.some(t => key.toLowerCase().trim() === t.toLowerCase() || key.toLowerCase().includes(t.toLowerCase())));
-                return k ? String(row[k]).trim() : '';
-            };
+                const HDR_HINTS = ['party','date','time','duration','type','imei','imsi','cell','calling','called','msisdn','cdr','number','mobile','dur'];
+        function extractRows(wb) {
+            const names = wb.SheetNames.filter(n => wb.Sheets[n]);
+            let best = null;
+            const order = names.includes('Mapping') ? ['Mapping'] : names;
+            for (const n of order) {
+                const grid = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, defval: '', raw: false });
+                let bi = 0, bs = -1;
+                for (let i = 0; i < Math.min(grid.length, 40); i++) {
+                    const sc = grid[i].filter(c => { c = String(c).toLowerCase(); return c && HDR_HINTS.some(h => c.includes(h)); }).length;
+                    if (sc > bs) { bs = sc; bi = i; }
+                }
+                if (!grid.length) continue;
+                const headers = grid[bi].map((h, i) => String(h).trim() || ('col' + i));
+                const rows = grid.slice(bi + 1).filter(r => r.some(c => String(c).trim() !== '')).map(r => {
+                    const o = {}; headers.forEach((h, i) => { if (!(h in o)) o[h] = r[i] == null ? '' : r[i]; }); return o;
+                });
+                if (!best || bs > best.score || (bs === best.score && rows.length > best.rows.length)) best = { rows, headers, score: bs };
+            }
+            return best || { rows: [], headers: [] };
+        }
 
+        function mapRow(row, type, crimeNo, fileId, fileTarget) {
+            const norm = k => String(k).toLowerCase().replace(/[^a-z0-9]/g, '');
+            const keys = Object.keys(row).map(k => ({ k, n: norm(k) }));
+            const getVal = (terms, excl) => {
+                const t = terms.map(norm);
+                const ks = excl ? keys.filter(o => !o.n.includes(excl)) : keys;
+                let f = null;
+                for (const x of t) { f = ks.find(o => o.n === x && String(row[o.k]).trim() !== ''); if (f) break; }
+                if (!f) for (const x of t) { f = ks.find(o => o.n.includes(x) && String(row[o.k]).trim() !== ''); if (f) break; }
+                return f ? String(row[f.k]).trim() : '';
+            };
+            let date = getVal(['date', 'call date', 'start date', 'date time', 'date and time', 'timestamp']);
+            let time = getVal(['time', 'call time', 'start time'], 'date');
+            if (!time) { const m = date.match(/^(.*?)[ T](\d{1,2}:\d{2}.*)$/); if (m) { date = m[1].trim(); time = m[2].trim(); } }
             return {
                 fileId, fileType: type, crimeNo,
-                targetNo: getVal(['cdrno', 'calling', 'a_party', 'target', 'msisdn', 'a party']),
-                otherNo: getVal(['b party', 'b_party', 'called', 'other', 'b party number', 'b-party']),
-                bPartySdr: getVal(['b party sdr', 'b_party_sdr', 'sdr', 'called_name', 'b party name']),
-                date: getVal(['date', 'call_date']),
-                time: getVal(['time', 'call_time']),
-                duration: getVal(['duration', 'dur', 'sec']),
-                type: getVal(['call type', 'call_type', 'type']),
-                firstCellAddress: getVal(['first cell id address', 'first_cell_id_address', 'tower address', 'tower_address']),
-                lastCellAddress: getVal(['last cell id address', 'last_cell_id_address']),
+                targetNo: getVal(['cdrno', 'a party', 'a party no', 'a party number', 'calling number', 'calling no', 'calling', 'target', 'msisdn', 'mobile no', 'mobile number', 'subscriber']) || fileTarget || '',
+                otherNo: getVal(['b party', 'b party no', 'b party number', 'called number', 'called no', 'called', 'dialed number', 'other party', 'other']),
+                bPartySdr: getVal(['b party sdr', 'sdr', 'called name', 'b party name']),
+                date, time,
+                duration: getVal(['duration', 'call duration', 'duration sec', 'dur', 'seconds']),
+                type: getVal(['call type', 'type', 'direction', 'call direction']),
+                firstCellAddress: getVal(['first cell id address', 'first cell address', 'tower address', 'cell address', 'site address', 'address', 'location']),
+                lastCellAddress: getVal(['last cell id address', 'last cell address']),
                 imei: getVal(['imei']), imsi: getVal(['imsi']), roaming: getVal(['roaming']), bCircle: getVal(['b party circle'])
             };
         }
 
-        function renderAll() {
+                function renderAll() {
             renderHomeFiles();
             resetCdrPageAndRender();
             renderIpdrData();
