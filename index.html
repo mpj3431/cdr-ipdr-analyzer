@@ -24,7 +24,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 3</p>
+                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 4</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -170,13 +170,13 @@
             <div class="bg-white rounded-xl p-3 border grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">ગુના નંબર પસંદ કરો:</label>
-                    <select id="cdrCrimeSelect" onchange="updateCdrNumberDropdown(); resetCdrPageAndRender();" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold">
+                    <select id="cdrCrimeSelect" onchange="updateCdrNumberDropdown()" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold">
                         <option value="">તમામ ગુના નંબર</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">મોબાઇલ નંબર પસંદ કરો:</label>
-                    <select id="cdrNumberSelect" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold text-blue-900">
+                    <select id="cdrNumberSelect" onchange="autoRange('cdr')" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold text-blue-900">
                         <option value="">તમામ નંબરો</option>
                     </select>
                 </div>
@@ -187,9 +187,10 @@
                 <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ થી:</label><input type="date" id="cdrFromDate" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ સુધી:</label><input type="date" id="cdrToDate" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય થી:</label><input type="time" id="cdrFromTime" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય સુધી:</label><input type="time" id="cdrToTime" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
-                    <button onclick="clearRange('cdr')" class="text-xs bg-gray-200 hover:bg-gray-300 rounded p-1.5 font-bold"><i class="fa-solid fa-filter-circle-xmark"></i> સમય ફિલ્ટર સાફ કરો</button>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય થી:</label><input type="time" step="1" id="cdrFromTime" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય સુધી:</label><input type="time" step="1" id="cdrToTime" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <button onclick="clearRange('cdr')" class="text-xs bg-gray-200 hover:bg-gray-300 rounded p-1.5 font-bold"><i class="fa-solid fa-rotate-left"></i> પૂરા ડેટા પર રીસેટ</button>
+                    <label class="col-span-2 md:col-span-5 text-xs text-gray-700 flex items-center gap-2"><input type="checkbox" id="cdrDaily" onchange="resetCdrPageAndRender()"> દરરોજના સમય મુજબ ફિલ્ટર (દા.ત. રોજ 22:00 થી 06:00)</label>
                 </div>
             </div>
 
@@ -238,20 +239,21 @@
             <div class="bg-white rounded-xl p-3 border grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">ગુના નંબર:</label>
-                    <select id="sumCrimeSelect" onchange="updateSumNumberDropdown(); renderCdrSummary();" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">તમામ ગુના નંબર</option></select>
+                    <select id="sumCrimeSelect" onchange="updateSumNumberDropdown()" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">તમામ ગુના નંબર</option></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">મોબાઇલ નંબર:</label>
-                    <select id="sumNumberSelect" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold text-indigo-900"><option value="">તમામ નંબરો</option></select>
+                    <select id="sumNumberSelect" onchange="autoRange('sum')" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold text-indigo-900"><option value="">તમામ નંબરો</option></select>
                 </div>
             </div>
             <div class="bg-white rounded-xl p-3 border">
                 <div class=" grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ થી:</label><input type="date" id="sumFromDate" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
                     <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ સુધી:</label><input type="date" id="sumToDate" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય થી:</label><input type="time" id="sumFromTime" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
-                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય સુધી:</label><input type="time" id="sumToTime" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
-                    <button onclick="clearRange('sum')" class="text-xs bg-gray-200 hover:bg-gray-300 rounded p-1.5 font-bold"><i class="fa-solid fa-filter-circle-xmark"></i> સમય ફિલ્ટર સાફ કરો</button>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય થી:</label><input type="time" step="1" id="sumFromTime" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય સુધી:</label><input type="time" step="1" id="sumToTime" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <button onclick="clearRange('sum')" class="text-xs bg-gray-200 hover:bg-gray-300 rounded p-1.5 font-bold"><i class="fa-solid fa-rotate-left"></i> પૂરા ડેટા પર રીસેટ</button>
+                    <label class="col-span-2 md:col-span-5 text-xs text-gray-700 flex items-center gap-2"><input type="checkbox" id="sumDaily" onchange="renderCdrSummary()"> દરરોજના સમય મુજબ ફિલ્ટર (દા.ત. રોજ 22:00 થી 06:00)</label>
                 </div>
             </div>
             <div id="sumCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
@@ -541,6 +543,7 @@
                 const numSel = document.getElementById('cdrNumberSelect');
                 numSel.innerHTML = '<option value="">તમામ નંબરો</option>';
                 numbers.forEach(n => numSel.innerHTML += `<option value="${n}">${n}</option>`);
+                autoRange('cdr');
             };
         }
 
@@ -552,26 +555,51 @@
         function getRangeFilter(p) {
             const g = id => document.getElementById(p + id).value;
             const toK = v => v ? +v.replace(/-/g, '') : 0;
-            const tm = v => v ? (+v.slice(0, 2) * 60 + +v.slice(3, 5)) : null;
-            return { fd: toK(g('FromDate')), td: toK(g('ToDate')), ft: tm(g('FromTime')), tt: tm(g('ToTime')) };
+            const tm = v => v ? (+v.slice(0, 2) * 3600 + +v.slice(3, 5) * 60 + (+v.slice(6, 8) || 0)) : null;
+            return { fd: toK(g('FromDate')), td: toK(g('ToDate')), ft: tm(g('FromTime')), tt: tm(g('ToTime')), daily: document.getElementById(p + 'Daily').checked };
+        }
+        function secOf(r) {
+            const m = String(r.time || '').match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+            return m ? (+m[1] * 3600 + +m[2] * 60 + +(m[3] || 0)) : null;
         }
         function inRange(r, f) {
-            if (f.fd || f.td) {
-                const k = dateKey(r.date);
-                if (!k || (f.fd && k < f.fd) || (f.td && k > f.td)) return false;
+            const k = dateKey(r.date), t = secOf(r);
+            if (f.daily || (!f.fd && !f.td)) {
+                if (f.fd || f.td) { if (!k || (f.fd && k < f.fd) || (f.td && k > f.td)) return false; }
+                if (f.ft !== null || f.tt !== null) {
+                    if (t === null) return false;
+                    const a = f.ft === null ? 0 : f.ft, b = f.tt === null ? 86399 : f.tt;
+                    if (a <= b ? (t < a || t > b) : (t < a && t > b)) return false;
+                }
+                return true;
             }
-            if (f.ft !== null || f.tt !== null) {
-                const m = String(r.time || '').match(/(\d{1,2}):(\d{2})/);
-                if (!m) return false;
-                const t = +m[1] * 60 + +m[2], a = f.ft === null ? 0 : f.ft, b = f.tt === null ? 1439 : f.tt;
-                if (a <= b ? (t < a || t > b) : (t < a && t > b)) return false;
-            }
+            if (!k) return false;
+            const key = k * 100000 + (t || 0);
+            if (f.fd && key < f.fd * 100000 + (f.ft || 0)) return false;
+            if (f.td && key > f.td * 100000 + (f.tt === null ? 86399 : f.tt)) return false;
             return true;
         }
-        function clearRange(p) {
-            ['FromDate', 'ToDate', 'FromTime', 'ToTime'].forEach(i => document.getElementById(p + i).value = '');
-            if (p === 'cdr') resetCdrPageAndRender(); else renderCdrSummary();
+        function autoRange(p) {
+            const crime = document.getElementById(p + 'CrimeSelect').value, number = document.getElementById(p + 'NumberSelect').value;
+            db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
+                let mn = Infinity, mx = -Infinity, a = null, b = null;
+                (e.target.result || []).forEach(r => {
+                    if (r.fileType !== 'cdr' || (crime && r.crimeNo !== crime) || (number && r.targetNo !== number)) return;
+                    const k = dateKey(r.date); if (!k) return;
+                    const sec = secOf(r) || 0, key = k * 100000 + sec;
+                    if (key < mn) { mn = key; a = { k, sec }; }
+                    if (key > mx) { mx = key; b = { k, sec }; }
+                });
+                const dv = k => { const x = String(k); return `${x.slice(0, 4)}-${x.slice(4, 6)}-${x.slice(6, 8)}`; };
+                const tv = sec => [Math.floor(sec / 3600), Math.floor(sec % 3600 / 60), sec % 60].map(x => String(x).padStart(2, '0')).join(':');
+                const set = (id, v) => document.getElementById(p + id).value = v;
+                if (a) { set('FromDate', dv(a.k)); set('FromTime', tv(a.sec)); set('ToDate', dv(b.k)); set('ToTime', tv(b.sec)); }
+                else ['FromDate', 'ToDate', 'FromTime', 'ToTime'].forEach(i => set(i, ''));
+                document.getElementById(p + 'Daily').checked = false;
+                if (p === 'cdr') resetCdrPageAndRender(); else renderCdrSummary();
+            };
         }
+        function clearRange(p) { autoRange(p); }
 
         function loadCdrRecords() {
             if(!db) return;
@@ -609,13 +637,13 @@
                     <td class="p-2 border font-bold">${r.crimeNo}</td>
                     <td class="p-2 border text-blue-900 font-semibold">${r.targetNo}</td>
                     <td class="p-2 border">${r.otherNo}</td>
-                    <td class="p-2 border font-medium text-emerald-800 max-w-xs truncate" title="${r.bPartySdr}">${r.bPartySdr}</td>
+                    <td class="p-2 border font-medium text-emerald-800 min-w-[18rem] whitespace-normal break-words">${r.bPartySdr}</td>
                     <td class="p-2 border">${r.date}</td>
                     <td class="p-2 border font-bold text-gray-900">${r.time}</td>
                     <td class="p-2 border">${r.duration}</td>
                     <td class="p-2 border">${r.type}</td>
-                    <td class="p-2 border max-w-xs truncate" title="${r.firstCellAddress}">${r.firstCellAddress}</td>
-                    <td class="p-2 border max-w-xs truncate" title="${r.lastCellAddress}">${r.lastCellAddress}</td>
+                    <td class="p-2 border min-w-[16rem] whitespace-normal break-words">${r.firstCellAddress}</td>
+                    <td class="p-2 border min-w-[16rem] whitespace-normal break-words">${r.lastCellAddress}</td>
                 </tr>`;
             });
 
@@ -695,7 +723,7 @@
                 sel.innerHTML = '<option value="">તમામ નંબરો</option>';
                 nums.forEach(n => sel.innerHTML += `<option value="${esc(n)}">${esc(n)}</option>`);
                 sel.value = nums.includes(prev) ? prev : '';
-                renderCdrSummary();
+                autoRange('sum');
             };
         }
         function topN(map, n) { return Object.entries(map).sort((a, b) => b[1].c - a[1].c).slice(0, n); }
@@ -730,8 +758,8 @@
                     card('કુલ ડ્યુરેશન', fmtDur(S.dur), 'border-purple-500') + card('યુનિક B-પાર્ટી', Object.keys(bp).length, 'border-rose-500') +
                     card('રાત્રિ કોલ (10pm-6am)', S.night, 'border-slate-700') + card('પીરિયડ', S.minD ? `${esc(S.minD)} → ${esc(S.maxD)}` : '-', 'border-teal-500');
                 const bpRows = topN(bp, 20), locRows = topN(loc, 15), dateRows = Object.entries(dts).sort((a, b) => a[1].k - b[1].k), numRows = topN(nums, 50);
-                document.getElementById('sumBparty').innerHTML = bpRows.map(([k, v]) => `<tr><td class="p-2 border font-semibold">${esc(k)}</td><td class="p-2 border max-w-xs truncate" title="${esc(v.sdr)}">${esc(String(v.sdr).split(',')[0])}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${v.d}</td></tr>`).join('');
-                document.getElementById('sumLoc').innerHTML = locRows.map(([k, v]) => `<tr><td class="p-2 border max-w-sm truncate" title="${esc(k)}">${esc(k)}</td><td class="p-2 border font-bold">${v.c}</td></tr>`).join('');
+                document.getElementById('sumBparty').innerHTML = bpRows.map(([k, v]) => `<tr><td class="p-2 border font-semibold">${esc(k)}</td><td class="p-2 border min-w-[18rem] whitespace-normal break-words">${esc(v.sdr)}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${v.d}</td></tr>`).join('');
+                document.getElementById('sumLoc').innerHTML = locRows.map(([k, v]) => `<tr><td class="p-2 border min-w-[16rem] whitespace-normal break-words">${esc(k)}</td><td class="p-2 border font-bold">${v.c}</td></tr>`).join('');
                 document.getElementById('sumDate').innerHTML = dateRows.map(([k, v]) => `<tr><td class="p-2 border">${esc(k)}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${v.d}</td></tr>`).join('');
                 document.getElementById('sumNums').innerHTML = numRows.map(([k, v]) => `<tr><td class="p-2 border font-semibold">${esc(k)}</td><td class="p-2 border font-bold">${v.c}</td><td class="p-2 border">${v.out}</td><td class="p-2 border">${v.in}</td><td class="p-2 border">${v.sms}</td></tr>`).join('');
                 const imRows = Object.values(im).sort((a, b) => b.c - a.c), circRows = Object.entries(circ).sort((a, b) => (b[1].r + b[1].b) - (a[1].r + a[1].b));
