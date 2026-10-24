@@ -176,6 +176,13 @@
                     <label class="block text-xs font-bold text-gray-700 mb-1">સર્ચ કરો:</label>
                     <input type="text" id="cdrSearch" oninput="resetCdrPageAndRender()" placeholder="નંબર, SDR નામ, લોકેશન સર્ચ..." class="w-full text-xs border rounded p-1.5">
                 </div>
+                <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ થી:</label><input type="date" id="cdrFromDate" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ સુધી:</label><input type="date" id="cdrToDate" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય થી:</label><input type="time" id="cdrFromTime" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય સુધી:</label><input type="time" id="cdrToTime" onchange="resetCdrPageAndRender()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <button onclick="clearRange('cdr')" class="text-xs bg-gray-200 hover:bg-gray-300 rounded p-1.5 font-bold"><i class="fa-solid fa-filter-circle-xmark"></i> સમય ફિલ્ટર સાફ કરો</button>
+                </div>
             </div>
 
             <!-- Table -->
@@ -225,6 +232,15 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">મોબાઇલ નંબર:</label>
                     <select id="sumNumberSelect" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold text-indigo-900"><option value="">તમામ નંબરો</option></select>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-3 border">
+                <div class=" grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ થી:</label><input type="date" id="sumFromDate" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">તારીખ સુધી:</label><input type="date" id="sumToDate" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય થી:</label><input type="time" id="sumFromTime" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-700 mb-1">સમય સુધી:</label><input type="time" id="sumToTime" onchange="renderCdrSummary()" class="w-full text-xs border rounded p-1.5 bg-white"></div>
+                    <button onclick="clearRange('sum')" class="text-xs bg-gray-200 hover:bg-gray-300 rounded p-1.5 font-bold"><i class="fa-solid fa-filter-circle-xmark"></i> સમય ફિલ્ટર સાફ કરો</button>
                 </div>
             </div>
             <div id="sumCards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
@@ -520,17 +536,42 @@
             loadCdrRecords();
         }
 
+        function getRangeFilter(p) {
+            const g = id => document.getElementById(p + id).value;
+            const toK = v => v ? +v.replace(/-/g, '') : 0;
+            const tm = v => v ? (+v.slice(0, 2) * 60 + +v.slice(3, 5)) : null;
+            return { fd: toK(g('FromDate')), td: toK(g('ToDate')), ft: tm(g('FromTime')), tt: tm(g('ToTime')) };
+        }
+        function inRange(r, f) {
+            if (f.fd || f.td) {
+                const k = dateKey(r.date);
+                if (!k || (f.fd && k < f.fd) || (f.td && k > f.td)) return false;
+            }
+            if (f.ft !== null || f.tt !== null) {
+                const m = String(r.time || '').match(/(\d{1,2}):(\d{2})/);
+                if (!m) return false;
+                const t = +m[1] * 60 + +m[2], a = f.ft === null ? 0 : f.ft, b = f.tt === null ? 1439 : f.tt;
+                if (a <= b ? (t < a || t > b) : (t < a && t > b)) return false;
+            }
+            return true;
+        }
+        function clearRange(p) {
+            ['FromDate', 'ToDate', 'FromTime', 'ToTime'].forEach(i => document.getElementById(p + i).value = '');
+            if (p === 'cdr') resetCdrPageAndRender(); else renderCdrSummary();
+        }
+
         function loadCdrRecords() {
             if(!db) return;
             const crime = document.getElementById('cdrCrimeSelect').value;
             const number = document.getElementById('cdrNumberSelect').value;
             const search = document.getElementById('cdrSearch').value.toLowerCase();
+            const rf = getRangeFilter('cdr');
 
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
                 const allRecords = e.target.result || [];
                 cachedCdrRecords = allRecords.filter(r => r.fileType === 'cdr' &&
                     (!crime || r.crimeNo === crime) &&
-                    (!number || r.targetNo === number) &&
+                    (!number || r.targetNo === number) && inRange(r, rf) &&
                     (!search || r.targetNo.toLowerCase().includes(search) || 
                                 r.otherNo.toLowerCase().includes(search) || 
                                 (r.bPartySdr && r.bPartySdr.toLowerCase().includes(search)) ||
@@ -648,8 +689,9 @@
         function renderCdrSummary() {
             if(!db || !document.getElementById('sumCrimeSelect')) return;
             const crime = document.getElementById('sumCrimeSelect').value, number = document.getElementById('sumNumberSelect').value;
+            const rf = getRangeFilter('sum');
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
-                const recs = (e.target.result || []).filter(r => r.fileType === 'cdr' && (!crime || r.crimeNo === crime) && (!number || r.targetNo === number));
+                const recs = (e.target.result || []).filter(r => r.fileType === 'cdr' && (!crime || r.crimeNo === crime) && (!number || r.targetNo === number) && inRange(r, rf));
                 const S = { total: recs.length, out: 0, in: 0, sms: 0, dur: 0, night: 0, minK: 0, maxK: 0, minD: '', maxD: '' };
                 const bp = {}, loc = {}, dts = {}, nums = {}, im = {}, circ = {};
                 recs.forEach(r => {
