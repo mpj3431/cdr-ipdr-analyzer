@@ -24,7 +24,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 4</p>
+                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 5</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -196,7 +196,15 @@
 
             <!-- Table -->
             <div class="bg-white rounded-xl border overflow-hidden shadow-sm">
-                <div class="overflow-x-auto max-h-[400px]">
+                <div class="p-3 bg-gray-50 border-b flex flex-wrap items-center gap-2 text-xs">
+                    <button id="modePageBtn" onclick="setCdrMode('page')" class="px-3 py-1.5 rounded font-bold">📄 પેજ વાઇઝ</button>
+                    <button id="modeAllBtn" onclick="setCdrMode('all')" class="px-3 py-1.5 rounded font-bold">📜 સળંગ (બધા)</button>
+                    <span id="pageSizeBox" class="flex items-center gap-1">પેજ દીઠ:
+                        <select id="pageSizeSel" onchange="setPageSize(this.value)" class="border rounded p-1 bg-white"><option>50</option><option selected>100</option><option>200</option><option>500</option></select>
+                    </span>
+                    <span id="cdrShownInfo" class="ml-auto font-bold text-gray-600"></span>
+                </div>
+                <div id="cdrScroll" class="overflow-auto max-h-[70vh]">
                     <table class="min-w-full text-xs text-left">
                         <thead class="bg-blue-800 text-white sticky top-0 z-10">
                             <tr>
@@ -215,11 +223,27 @@
                         <tbody id="cdrTableBody" class="divide-y text-gray-700"></tbody>
                     </table>
                 </div>
-                <!-- Pagination Controls -->
-                <div class="p-3 bg-gray-50 border-t flex justify-between items-center text-xs">
-                    <button onclick="changeCdrPage(-1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⬅️ અગાઉનું</button>
-                    <span id="pageIndicator" class="font-bold text-gray-700">પેજ 1</span>
-                    <button onclick="changeCdrPage(1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">આગળનું ➡️</button>
+                <!-- Pagination Controls (page mode) -->
+                <div id="pageControls" class="p-3 bg-gray-50 border-t flex flex-wrap justify-between items-center gap-2 text-xs">
+                    <div class="flex gap-2">
+                        <button onclick="goCdrPage(1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⏮ પહેલું</button>
+                        <button onclick="changeCdrPage(-1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⬅️ અગાઉનું</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="pageIndicator" class="font-bold text-gray-700">પેજ 1</span>
+                        <input id="gotoPage" type="number" min="1" placeholder="પેજ નં." onkeydown="if(event.key==='Enter')goCdrPage(this.value)" class="w-20 border rounded p-1 text-center">
+                        <button onclick="goCdrPage(document.getElementById('gotoPage').value)" class="bg-indigo-600 text-white px-2 py-1 rounded font-bold">જાઓ</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="changeCdrPage(1)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">આગળનું ➡️</button>
+                        <button onclick="goCdrPage(1e9)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">છેલ્લું ⏭</button>
+                    </div>
+                </div>
+                <!-- Controls (continuous mode) -->
+                <div id="allControls" class="hidden p-3 bg-gray-50 border-t flex justify-between items-center text-xs">
+                    <button onclick="cdrJump(false)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⏫ સૌથી ઉપર</button>
+                    <span class="text-gray-500">નીચે સ્ક્રોલ કરતાં બાકીનો ડેટા આપમેળે લોડ થશે</span>
+                    <button onclick="cdrJump(true)" class="bg-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-300">⏬ છેલ્લે જાઓ</button>
                 </div>
             </div>
         </div>
@@ -325,7 +349,8 @@
         let db;
         const dbName = "CrimeDB_MultiSelect_V16";
         let currentPage = 1;
-        const pageSize = 100;
+        let pageSize = 100, viewMode = 'page', shownCount = 0;
+        const CHUNK = 300;
         let cachedCdrRecords = [];
 
         const request = indexedDB.open(dbName, 1);
@@ -624,40 +649,70 @@
             };
         }
 
-        function renderCdrPage() {
-            const tbody = document.getElementById('cdrTableBody');
-            tbody.innerHTML = '';
-
-            const startIdx = (currentPage - 1) * pageSize;
-            const endIdx = startIdx + pageSize;
-            const pageRecords = cachedCdrRecords.slice(startIdx, endIdx);
-
-            pageRecords.forEach(r => {
-                tbody.innerHTML += `<tr class="hover:bg-blue-50">
-                    <td class="p-2 border font-bold">${r.crimeNo}</td>
-                    <td class="p-2 border text-blue-900 font-semibold">${r.targetNo}</td>
-                    <td class="p-2 border">${r.otherNo}</td>
-                    <td class="p-2 border font-medium text-emerald-800 min-w-[18rem] whitespace-normal break-words">${r.bPartySdr}</td>
-                    <td class="p-2 border">${r.date}</td>
-                    <td class="p-2 border font-bold text-gray-900">${r.time}</td>
-                    <td class="p-2 border">${r.duration}</td>
-                    <td class="p-2 border">${r.type}</td>
-                    <td class="p-2 border min-w-[16rem] whitespace-normal break-words">${r.firstCellAddress}</td>
-                    <td class="p-2 border min-w-[16rem] whitespace-normal break-words">${r.lastCellAddress}</td>
+        function cdrRowHtml(r) {
+            return `<tr class="hover:bg-blue-50">
+                    <td class="p-2 border font-bold">${esc(r.crimeNo)}</td>
+                    <td class="p-2 border text-blue-900 font-semibold">${esc(r.targetNo)}</td>
+                    <td class="p-2 border">${esc(r.otherNo)}</td>
+                    <td class="p-2 border font-medium text-emerald-800 min-w-[18rem] whitespace-normal break-words">${esc(r.bPartySdr)}</td>
+                    <td class="p-2 border">${esc(r.date)}</td>
+                    <td class="p-2 border font-bold text-gray-900">${esc(r.time)}</td>
+                    <td class="p-2 border">${esc(r.duration)}</td>
+                    <td class="p-2 border">${esc(r.type)}</td>
+                    <td class="p-2 border min-w-[16rem] whitespace-normal break-words">${esc(r.firstCellAddress)}</td>
+                    <td class="p-2 border min-w-[16rem] whitespace-normal break-words">${esc(r.lastCellAddress)}</td>
                 </tr>`;
-            });
-
-            const totalPages = Math.ceil(cachedCdrRecords.length / pageSize) || 1;
-            document.getElementById('pageIndicator').innerText = `પેજ ${currentPage} / ${totalPages}`;
         }
 
-        function changeCdrPage(direction) {
-            const totalPages = Math.ceil(cachedCdrRecords.length / pageSize) || 1;
-            if(currentPage + direction >= 1 && currentPage + direction <= totalPages) {
-                currentPage += direction;
-                renderCdrPage();
+        function renderCdrPage() {
+            const tbody = document.getElementById('cdrTableBody'), sc = document.getElementById('cdrScroll');
+            const len = cachedCdrRecords.length, isPage = viewMode === 'page';
+            const on = 'px-3 py-1.5 rounded font-bold bg-blue-700 text-white', off = 'px-3 py-1.5 rounded font-bold bg-slate-200 hover:bg-slate-300';
+            document.getElementById('modePageBtn').className = isPage ? on : off;
+            document.getElementById('modeAllBtn').className = isPage ? off : on;
+            document.getElementById('pageControls').classList.toggle('hidden', !isPage);
+            document.getElementById('allControls').classList.toggle('hidden', isPage);
+            document.getElementById('pageSizeBox').classList.toggle('hidden', !isPage);
+            if (isPage) {
+                const totalPages = Math.ceil(len / pageSize) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                const startIdx = (currentPage - 1) * pageSize, endIdx = Math.min(len, startIdx + pageSize);
+                tbody.innerHTML = cachedCdrRecords.slice(startIdx, endIdx).map(cdrRowHtml).join('');
+                document.getElementById('pageIndicator').innerText = `પેજ ${currentPage} / ${totalPages}`;
+                document.getElementById('cdrShownInfo').innerText = len ? `${startIdx + 1}–${endIdx} / કુલ ${len}` : 'કોઈ રેકોર્ડ નથી';
+            } else {
+                tbody.innerHTML = ''; shownCount = 0;
+                appendCdrChunk(false);
             }
+            sc.scrollTop = 0;
         }
+
+        function appendCdrChunk(all) {
+            const len = cachedCdrRecords.length, n = all ? len : Math.min(len, shownCount + CHUNK);
+            if (n > shownCount) document.getElementById('cdrTableBody').insertAdjacentHTML('beforeend', cachedCdrRecords.slice(shownCount, n).map(cdrRowHtml).join(''));
+            shownCount = n;
+            document.getElementById('cdrShownInfo').innerText = len ? `બતાવેલ ${shownCount} / કુલ ${len}` : 'કોઈ રેકોર્ડ નથી';
+        }
+
+        function setCdrMode(m) { viewMode = m; currentPage = 1; renderCdrPage(); }
+        function setPageSize(v) { pageSize = +v || 100; currentPage = 1; renderCdrPage(); }
+        function goCdrPage(n) {
+            const totalPages = Math.ceil(cachedCdrRecords.length / pageSize) || 1;
+            currentPage = Math.min(Math.max(1, parseInt(n) || 1), totalPages);
+            renderCdrPage();
+        }
+        function changeCdrPage(direction) { goCdrPage(currentPage + direction); }
+        function cdrJump(toEnd) {
+            const sc = document.getElementById('cdrScroll');
+            if (toEnd) { if (shownCount < cachedCdrRecords.length) appendCdrChunk(true); sc.scrollTop = sc.scrollHeight; }
+            else sc.scrollTop = 0;
+        }
+        window.addEventListener('load', () => {
+            const sc = document.getElementById('cdrScroll');
+            sc.addEventListener('scroll', () => {
+                if (viewMode === 'all' && shownCount < cachedCdrRecords.length && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 600) appendCdrChunk(false);
+            });
+        });
 
         function renderIpdrData() {
             if(!db) return;
