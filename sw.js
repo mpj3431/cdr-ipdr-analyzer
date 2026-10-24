@@ -1,4 +1,4 @@
-const CACHE = 'cdr-analyzer-v1';
+const CACHE = 'cdr-analyzer-v3';
 self.addEventListener('install', e => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./index.html', './manifest.webmanifest', './icon-192.png'])).catch(() => {}));

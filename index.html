@@ -24,7 +24,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે</p>
+                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 3</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -61,6 +61,10 @@
 
         <!-- 1. HOME & MULTI-FILE UPLOAD TAB -->
         <div id="tab-content-home" class="tab-page space-y-6">
+            <div id="staleBanner" class="hidden bg-amber-100 border border-amber-400 text-amber-900 rounded-xl p-4 text-sm">
+                <b>⚠️ જૂના વર્ઝનથી સેવ થયેલો ડેટા મળ્યો.</b> તેમાં B-પાર્ટી SDR જેવી કૉલમ ખોટી/ખાલી હોઈ શકે. બધો જૂનો ડેટા સાફ કરી ફાઇલો ફરી અપલોડ કરો.
+                <button onclick="clearAllData()" class="ml-2 mt-2 bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded">જૂનો ડેટા સાફ કરો</button>
+            </div>
             <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-6 rounded-2xl shadow-lg">
                 <h2 class="text-2xl font-black mb-1">મલ્ટીફાઇલ અપલોડ સેન્ટર</h2>
                 <p class="text-xs text-indigo-200">એકસાથે બહુવિધ Excel/CSV ફાઇલો સિલેક્ટ કરીને અપલોડ કરો.</p>
@@ -405,7 +409,7 @@
 
                     await new Promise((resolve, reject) => {
                         const tx = db.transaction(['files', 'records'], 'readwrite');
-                        tx.objectStore('files').add({ fileName: file.name, crimeNo, fileType: type, rowCount: sheetData.length, targetNo }).onsuccess = (ev) => {
+                        tx.objectStore('files').add({ fileName: file.name, crimeNo, fileType: type, rowCount: sheetData.length, targetNo, schema: APP_SCHEMA }).onsuccess = (ev) => {
                             const fileId = ev.target.result;
                             const rs = tx.objectStore('records');
                             sheetData.forEach(row => rs.add(mapRow(row, type, crimeNo, fileId, fileTarget)));
@@ -477,6 +481,7 @@
         }
 
                 function renderAll() {
+            checkStaleData();
             renderHomeFiles();
             resetCdrPageAndRender();
             renderIpdrData();
@@ -772,6 +777,15 @@
             document.getElementById('toastMsg').innerText = msg;
             t.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2000);
+        }
+
+        const APP_SCHEMA = 3;
+        function checkStaleData() {
+            if (!db) return;
+            db.transaction('files', 'readonly').objectStore('files').getAll().onsuccess = (e) => {
+                const stale = (e.target.result || []).some(f => f.schema !== APP_SCHEMA);
+                document.getElementById('staleBanner').classList.toggle('hidden', !stale);
+            };
         }
 
         function clearAllData() {
