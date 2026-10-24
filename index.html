@@ -222,7 +222,10 @@
                     <span class="bg-indigo-600 text-xs uppercase px-2 py-0.5 rounded font-bold">CDR સમરી</span>
                     <h2 class="text-xl font-bold mt-1">કોલ ડિટેઇલ સારાંશ રિપોર્ટ</h2>
                 </div>
-                <button onclick="exportSummary()" class="bg-emerald-600 hover:bg-emerald-700 text-xs px-3 py-1.5 rounded font-bold"><i class="fa-solid fa-file-excel"></i> Excel એક્સપોર્ટ</button>
+                <div class="flex gap-2">
+                    <button onclick="exportSummary()" class="bg-emerald-600 hover:bg-emerald-700 text-xs px-3 py-1.5 rounded font-bold"><i class="fa-solid fa-file-excel"></i> ડાઉનલોડ</button>
+                    <button onclick="exportSummary(true)" class="bg-sky-600 hover:bg-sky-700 text-xs px-3 py-1.5 rounded font-bold"><i class="fa-solid fa-share-nodes"></i> શેર/સેવ</button>
+                </div>
             </div>
             <div class="bg-white rounded-xl p-3 border grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
@@ -727,7 +730,26 @@
                 lastSummary = { S, bpRows, locRows, dateRows, numRows, imRows, circRows };
             };
         }
-        function exportSummary() {
+        async function saveWorkbook(wb, name, share) {
+            const data = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            const blob = new Blob([data], { type: mime });
+            if (share) {
+                try {
+                    const f = new File([blob], name, { type: mime });
+                    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: name }); return; }
+                    showToast('આ બ્રાઉઝરમાં શેર સપોર્ટ નથી, Chrome માં ખોલો');
+                } catch (err) { if (err && err.name !== 'AbortError') showToast('શેર થઈ શક્યું નહીં'); }
+                return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = name; a.style.display = 'none';
+            document.body.appendChild(a); a.click();
+            setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 10000);
+            showToast('ડાઉનલોડ શરૂ થયું: ' + name);
+        }
+        function exportSummary(share) {
             if (!lastSummary || !lastSummary.S.total) { showToast('એક્સપોર્ટ માટે ડેટા નથી'); return; }
             const { S, bpRows, locRows, dateRows, numRows, imRows, circRows } = lastSummary, wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{ 'કુલ રેકોર્ડ્સ': S.total, 'Outgoing': S.out, 'Incoming': S.in, 'SMS': S.sms, 'કુલ ડ્યુરેશન (સેક)': S.dur, 'રાત્રિ કોલ': S.night, 'પીરિયડ': `${S.minD} to ${S.maxD}` }]), 'Summary');
@@ -737,7 +759,7 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(numRows.map(([k, v]) => ({ 'Number': k, 'Total': v.c, 'Out': v.out, 'In': v.in, 'SMS': v.sms }))), 'Per Number');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(imRows.map(v => ({ 'IMEI': v.imei, 'IMSI': v.imsi, 'Calls': v.c, 'First': v.minD, 'Last': v.maxD }))), 'IMEI');
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(circRows.map(([k, v]) => ({ 'Circle': k, 'Target Roaming': v.r, 'B-Party Circle': v.b }))), 'Circle');
-            XLSX.writeFile(wb, 'CDR_Summary.xlsx');
+            saveWorkbook(wb, 'CDR_Summary.xlsx', share);
         }
 
         function showToast(msg) {
