@@ -450,13 +450,14 @@
         function mapRow(row, type, crimeNo, fileId, fileTarget) {
             const norm = k => String(k).toLowerCase().replace(/[^a-z0-9]/g, '');
             const keys = Object.keys(row).map(k => ({ k, n: norm(k) }));
-            const getVal = (terms, excl) => {
+            // Column is chosen by header name only; an empty cell stays empty (never borrows another column's value)
+            const getVal = (terms, excl, exactOnly) => {
                 const t = terms.map(norm);
                 const ks = excl ? keys.filter(o => !o.n.includes(excl)) : keys;
                 let f = null;
-                for (const x of t) { f = ks.find(o => o.n === x && String(row[o.k]).trim() !== ''); if (f) break; }
-                if (!f) for (const x of t) { f = ks.find(o => o.n.includes(x) && String(row[o.k]).trim() !== ''); if (f) break; }
-                return f ? String(row[f.k]).trim() : '';
+                for (const x of t) { f = ks.find(o => o.n === x); if (f) break; }
+                if (!f && !exactOnly) for (const x of t) { f = ks.find(o => o.n.includes(x)); if (f) break; }
+                return f ? String(row[f.k] == null ? '' : row[f.k]).trim() : '';
             };
             let date = getVal(['date', 'call date', 'start date', 'date time', 'date and time', 'timestamp']);
             let time = getVal(['time', 'call time', 'start time'], 'date');
@@ -465,7 +466,7 @@
                 fileId, fileType: type, crimeNo,
                 targetNo: getVal(['cdrno', 'a party', 'a party no', 'a party number', 'calling number', 'calling no', 'calling', 'target', 'msisdn', 'mobile no', 'mobile number', 'subscriber']) || fileTarget || '',
                 otherNo: getVal(['b party', 'b party no', 'b party number', 'called number', 'called no', 'called', 'dialed number', 'other party', 'other']),
-                bPartySdr: getVal(['b party sdr', 'sdr', 'called name', 'b party name']),
+                bPartySdr: getVal(['b party sdr', 'called name', 'b party name', 'sdr'], null, true),
                 date, time,
                 duration: getVal(['duration', 'call duration', 'duration sec', 'dur', 'seconds']),
                 type: getVal(['call type', 'type', 'direction', 'call direction']),
