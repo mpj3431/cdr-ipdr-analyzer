@@ -24,7 +24,7 @@
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
                     <h1 class="font-bold text-lg leading-tight">CDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 10</p>
+                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 11</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -497,9 +497,20 @@
                         <td class="p-2 border">${esc(f.fileName)}</td>
                         <td class="p-2 border uppercase">${f.fileType}</td>
                         <td class="p-2 border">${f.rowCount}</td>
-                        <td class="p-2 border"><button onclick="deleteFile(${f.id})" class="text-rose-600 font-bold"><i class="fa-solid fa-trash"></i></button></td>
+                        <td class="p-2 border">${f.fileType === 'tower' ? `<button onclick="editPlace(${f.id})" title="ગુનાની જગ્યા ઉમેરો / બદલો" class="text-purple-700 font-bold mr-3">📍</button>` : ''}<button onclick="deleteFile(${f.id})" class="text-rose-600 font-bold"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
                 });
+            };
+        }
+
+        function editPlace(id) {
+            db.transaction('files', 'readonly').objectStore('files').get(id).onsuccess = (e) => {
+                const f = e.target.result; if (!f) return;
+                const val = prompt('ગુનાની જગ્યા લખો (દા.ત. પટીયાલી):', f.place || ''); if (val === null) return;
+                const place = val.trim(), tx = db.transaction(['files', 'records'], 'readwrite');
+                f.place = place; tx.objectStore('files').put(f);
+                tx.objectStore('records').getAll().onsuccess = (ev) => { ev.target.result.forEach(r => { if (r.fileId === id) { r.place = place; tx.objectStore('records').put(r); } }); };
+                tx.oncomplete = () => { showToast('ગુનાની જગ્યા સેવ થઈ'); loadDropdowns(); renderAll(); };
             };
         }
 
@@ -530,9 +541,10 @@
                 if (VIEW_CFG[p] && VIEW_CFG[p].place && !skipPlaces) {
                     const ps = document.getElementById(p + 'PlaceSelect'), prevP = keep ? ps.value : '';
                     const places = crime ? [...new Set(recs.map(r => r.place).filter(Boolean))] : [];
-                    ps.innerHTML = '<option value="">-- તમામ જગ્યા --</option>' + places.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
+                    const first = !crime ? '-- પહેલાં ગુના નંબર પસંદ કરો --' : places.length ? '-- તમામ જગ્યા --' : '-- કોઈ જગ્યા સેવ નથી (હોમમાં 📍 થી ઉમેરો) --';
+                    ps.innerHTML = `<option value="">${first}</option>` + places.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
                     ps.value = places.includes(prevP) ? prevP : '';
-                    document.getElementById(p + 'PlaceBox').style.display = places.length ? '' : 'none';
+                    ps.disabled = !places.length;
                 }
                 const place = placeOf(p);
                 const numbers = crime ? [...new Set(recs.filter(r => !place || r.place === place).map(r => r.targetNo).filter(Boolean))] : [];
@@ -737,8 +749,8 @@
                 <div class="bg-white rounded-xl p-3 border grid grid-cols-1 ${c.place ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3 items-center">
                     <div><label class="${lbl}">ગુના નંબર પસંદ કરો:</label>
                         <select id="${p}CrimeSelect" onchange="fillNumbers('${p}', this.value, false)" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">-- ગુના નંબર પસંદ કરો --</option></select></div>
-                    ${c.place ? `<div id="${p}PlaceBox" style="display:none"><label class="${lbl}">ગુનાની જગ્યા:</label>
-                        <select id="${p}PlaceSelect" onchange="onPlaceChange('${p}')" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">-- તમામ જગ્યા --</option></select></div>` : ''}
+                    ${c.place ? `<div id="${p}PlaceBox"><label class="${lbl}">ગુનાની જગ્યા:</label>
+                        <select id="${p}PlaceSelect" onchange="onPlaceChange('${p}')" disabled class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">-- પહેલાં ગુના નંબર પસંદ કરો --</option></select></div>` : ''}
                     <div><label class="${lbl}">મોબાઇલ નંબર પસંદ કરો:</label>
                         <select id="${p}NumberSelect" onchange="autoRange('${p}')" disabled class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">-- પહેલાં ગુના નંબર પસંદ કરો --</option></select></div>
                     <div id="${p}SearchBox" style="display:none"><label class="${lbl}">સર્ચ કરો:</label>
