@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CDR, IPDR અને ટાવર ડમ્પ એનાલાઇઝર</title>
+    <title>CDR અને ટાવર ડમ્પ એનાલાઇઝર</title>
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0f172a">
     <link rel="icon" href="icon-192.png">
@@ -23,8 +23,8 @@
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight">CDR / IPDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
-                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 9</p>
+                    <h1 class="font-bold text-lg leading-tight">CDR / ટાવર ડમ્પ એનાલાઇઝર</h1>
+                    <p class="text-xs text-slate-400">મલ્ટીફાઇલ અપલોડ + CDR સમરી સાથે • વર્ઝન 10</p>
                 </div>
             </div>
             <button onclick="clearAllData()" class="bg-rose-800 hover:bg-rose-700 text-xs text-white px-3 py-1.5 rounded border border-rose-600 flex items-center gap-1.5">
@@ -45,9 +45,6 @@
                 </button>
                 <button onclick="switchTab('summary')" id="tab-summary" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
                     <i class="fa-solid fa-chart-pie"></i> CDR સમરી
-                </button>
-                <button onclick="switchTab('ipdr')" id="tab-ipdr" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
-                    <i class="fa-solid fa-globe"></i> IPDR એનાલિસિસ
                 </button>
                 <button onclick="switchTab('tower')" id="tab-tower" class="tab-btn px-4 py-2 rounded-md font-medium text-sm text-gray-600 hover:bg-gray-100 flex items-center gap-2">
                     <i class="fa-solid fa-tower-cell"></i> ટાવર ડમ્પ
@@ -71,7 +68,7 @@
             </div>
 
             <!-- Upload Cards Grid with 'multiple' enabled -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- CDR Upload Card -->
                 <div class="bg-white p-5 rounded-xl border border-blue-200 shadow-sm">
                     <div class="flex items-center gap-2 mb-3 text-blue-800 font-bold">
@@ -90,24 +87,6 @@
                     </form>
                 </div>
 
-                <!-- IPDR Upload Card -->
-                <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm">
-                    <div class="flex items-center gap-2 mb-3 text-emerald-800 font-bold">
-                        <i class="fa-solid fa-globe text-lg"></i> IPDR મલ્ટીફાઇલ અપલોડ
-                    </div>
-                    <form onsubmit="handleMultiUpload(event, 'ipdr')" class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">ગુના નંબર / FIR No. *</label>
-                            <input type="text" id="homeCrimeIpdr" required placeholder="દા.ત. FIR 101/2026" class="w-full px-3 py-1.5 text-xs border rounded">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">એક કે વધુ ફાઇલો પસંદ કરો (Multiple) *</label>
-                            <input type="file" id="homeFileIpdr" multiple required accept=".xlsx, .xls, .csv" class="w-full text-xs text-gray-500">
-                        </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2 rounded font-bold">IPDR સેવ કરો</button>
-                    </form>
-                </div>
-
                 <!-- Tower Dump Upload Card -->
                 <div class="bg-white p-5 rounded-xl border border-purple-200 shadow-sm">
                     <div class="flex items-center gap-2 mb-3 text-purple-800 font-bold">
@@ -115,8 +94,12 @@
                     </div>
                     <form onsubmit="handleMultiUpload(event, 'tower')" class="space-y-3">
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">ગુના નંબર / સ્થળ *</label>
-                            <input type="text" id="homeCrimeTower" required placeholder="દા.ત. FIR 101 / SG Highway" class="w-full px-3 py-1.5 text-xs border rounded">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">ગુના નંબર *</label>
+                            <input type="text" id="homeCrimeTower" required placeholder="દા.ત. FIR 101/2026" class="w-full px-3 py-1.5 text-xs border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">ગુનાની જગ્યા *</label>
+                            <input type="text" id="homePlaceTower" required placeholder="દા.ત. પટીયાલી / SG Highway" class="w-full px-3 py-1.5 text-xs border rounded">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">એક કે વધુ ફાઇલો પસંદ કરો (Multiple) *</label>
@@ -293,29 +276,6 @@
             </div>
         </div>
 
-        <!-- 3. IPDR DASHBOARD -->
-        <div id="tab-content-ipdr" class="tab-page space-y-4 hidden">
-            <div class="bg-emerald-900 text-white rounded-xl p-4 shadow">
-                <h2 class="text-xl font-bold">IP Detail Record ડેશબોર્ડ</h2>
-            </div>
-            <div class="bg-white rounded-xl border overflow-hidden">
-                <div class="overflow-x-auto max-h-96">
-                    <table class="min-w-full text-xs text-left">
-                        <thead class="bg-emerald-800 text-white sticky top-0">
-                            <tr>
-                                <th class="p-2 border">ગુના નંબર</th>
-                                <th class="p-2 border">ટાર્ગેટ નંબર / ID</th>
-                                <th class="p-2 border">સોર્સ IP</th>
-                                <th class="p-2 border">ડેસ્ટિનેશન IP</th>
-                                <th class="p-2 border">તારીખ & સમય</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ipdrTableBody" class="divide-y text-gray-700"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
         <!-- 4. TOWER DUMP DASHBOARD -->
         <div id="tab-content-tower" class="tab-page space-y-4 hidden">
             <div class="bg-purple-900 text-white rounded-xl p-4 shadow">
@@ -407,8 +367,10 @@
 
         async function handleMultiUpload(e, type) {
             e.preventDefault();
-            const crimeNo = document.getElementById(type === 'cdr' ? 'homeCrimeCdr' : type === 'ipdr' ? 'homeCrimeIpdr' : 'homeCrimeTower').value.trim();
-            const fileInput = document.getElementById(type === 'cdr' ? 'homeFileCdr' : type === 'ipdr' ? 'homeFileIpdr' : 'homeFileTower');
+            const crimeNo = document.getElementById(type === 'cdr' ? 'homeCrimeCdr' : 'homeCrimeTower').value.trim();
+            const fileInput = document.getElementById(type === 'cdr' ? 'homeFileCdr' : 'homeFileTower');
+            const placeEl = document.getElementById('homePlaceTower');
+            const place = type === 'tower' && placeEl ? placeEl.value.trim() : '';
             const files = Array.from(fileInput.files);
             if(!files.length) return;
 
@@ -433,17 +395,17 @@
                         failed++; logUpload(`❌ ${file.name} – કૉલમ ઓળખાઈ નહીં. મળેલા હેડર: ${headers.slice(0, 15).join(' | ')}`, 'text-rose-700'); continue;
                     }
                     const targetNo = probe[0].targetNo;
-                    if (existingFiles.some(f => f.crimeNo === crimeNo && f.fileType === type && f.rowCount === sheetData.length && (f.targetNo || '') === targetNo)) {
+                    if (existingFiles.some(f => f.crimeNo === crimeNo && f.fileType === type && f.rowCount === sheetData.length && (f.targetNo || '') === targetNo && (f.place || '') === place)) {
                         skipped++; logUpload(`⚠️ ${file.name} (${targetNo}) – આ નંબરનો આ જ ડેટા પહેલેથી સેવ છે (સ્કીપ)`, 'text-amber-700'); continue;
                     }
-                    existingFiles.push({ crimeNo, fileType: type, rowCount: sheetData.length, targetNo });
+                    existingFiles.push({ crimeNo, fileType: type, rowCount: sheetData.length, targetNo, place });
 
                     await new Promise((resolve, reject) => {
                         const tx = db.transaction(['files', 'records'], 'readwrite');
-                        tx.objectStore('files').add({ fileName: file.name, crimeNo, fileType: type, rowCount: sheetData.length, targetNo, schema: APP_SCHEMA }).onsuccess = (ev) => {
+                        tx.objectStore('files').add({ fileName: file.name, crimeNo, fileType: type, rowCount: sheetData.length, targetNo, place, schema: APP_SCHEMA }).onsuccess = (ev) => {
                             const fileId = ev.target.result;
                             const rs = tx.objectStore('records');
-                            sheetData.forEach(row => rs.add(mapRow(row, type, crimeNo, fileId, fileTarget)));
+                            sheetData.forEach(row => { const rec = mapRow(row, type, crimeNo, fileId, fileTarget); rec.place = place; rs.add(rec); });
                         };
                         tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
                     });
@@ -498,18 +460,11 @@
             let date = getVal(['date', 'call date', 'start date', 'date time', 'date and time', 'timestamp', 'start time', 'start date time', 'session start time', 'session start date time', 'event time']);
             let time = getVal(['time', 'call time', 'start time'], 'date');
             { const m = date.match(DT); if (m && (!time || time === date)) { date = m[1].trim(); time = m[2].trim(); } }
-            // IPDR: end of session (end date + end time may be in two columns)
-            const endD = getVal(['end date']);
-            let endTime = getVal(['end time', 'end date time', 'session end time', 'session end date time']);
-            if (endTime && endD && !/[\/\-]/.test(endTime)) endTime = endD + ' ' + endTime;
-            // IPDR (Jio format): TIME1 = actual connection time, start/end columns = public-IP allocation window
-            let ipStart = '';
-            { const t1 = getVal(['time1']).match(DT); if (t1) { ipStart = (date + ' ' + time).trim(); date = t1[1].trim(); time = t1[2].trim(); } }
             const cgi = getVal(['cgi id', 'cgi ld', 'cgi', 'cell global id'], null, true);
             return {
                 fileId, fileType: type, crimeNo,
                 targetNo: getVal(['cdrno', 'a party', 'a party no', 'a party number', 'calling number', 'calling no', 'calling', 'target', 'msisdn', 'mobile no', 'mobile number', 'subscriber']) || fileTarget || '',
-                otherNo: type === 'ipdr' ? '' : getVal(['b party', 'b party no', 'b party number', 'called number', 'called no', 'called', 'dialed number', 'other party', 'other']),
+                otherNo: getVal(['b party', 'b party no', 'b party number', 'called number', 'called no', 'called', 'dialed number', 'other party', 'other']),
                 bPartySdr: getVal(['b party sdr', 'called name', 'b party name', 'sdr'], null, true),
                 date, time,
                 duration: getVal(['duration', 'call duration', 'duration sec', 'dur', 'seconds']),
@@ -517,20 +472,9 @@
                 firstCellAddress: getVal(['first cell id name location', 'first cell id address', 'first cell address', 'tower address', 'cell address', 'site address', 'location']),
                 lastCellAddress: getVal(['last cell id address', 'last cell address']),
                 imei: getVal(['imei', 'other device identification']), imsi: getVal(['imsi']),
-                roaming: getVal(['roaming']), roamCircle: getVal(['roaming circle'], null, true), bCircle: getVal(['b party circle']),
-                srcIp: getVal(['source ip', 'source ip address', 'src ip', 'private ip', 'private ip address', 'public ip', 'ip address', 'srcip']),
-                srcPort: getVal(['source port', 'src port', 'private port', 'public port']),
-                dstIp: getVal(['destination ip', 'destination ip address', 'dest ip', 'dst ip', 'destip']),
-                dstPort: getVal(['destination port', 'dest port', 'dst port']),
-                transIp: getVal(['translated ip', 'nat ip', 'public ip address']), transPort: getVal(['translated port', 'nat port']),
-                endTime, ipStart,
+                roaming: getVal(['roaming']), bCircle: getVal(['b party circle']),
                 cellId: getVal(['first cell id', 'cell id', 'cellid', 'site id', 'tower id'], null, true) || cgi, cgi,
-                lastCellId: getVal(['last cell id'], null, true),
-                upVol: getVal(['data volume uplink', 'data volume up link', 'uplink volume', 'uplink', 'upload volume']),
-                downVol: getVal(['data volume downlink', 'data volume down link', 'downlink volume', 'downlink', 'download volume']),
-                apn: getVal(['access point name', 'apn']), rat: getVal(['rat'], null, true),
-                pgwIp: getVal(['pgw ip address'], null, true), allocType: getVal(['static dynamic ip address allocation'], null, true), simType: getVal(['sim type'], null, true),
-                subscriber: [getVal(['name of person organization', 'subscriber name', 'name'], null, true), getVal(['address'], null, true), getVal(['contact no', 'contact number', 'alternate contact no'], null, true)].filter(Boolean).join(' | ')
+                lastCellId: getVal(['last cell id'], null, true)
             };
         }
 
@@ -538,7 +482,6 @@
             checkStaleData();
             renderHomeFiles();
             resetCdrPageAndRender();
-            viewReset('ipdr');
             viewReset('tower');
             renderCdrSummary();
         }
@@ -550,8 +493,8 @@
                 tbody.innerHTML = '';
                 (e.target.result || []).forEach(f => {
                     tbody.innerHTML += `<tr>
-                        <td class="p-2 border font-bold">${f.crimeNo}</td>
-                        <td class="p-2 border">${f.fileName}</td>
+                        <td class="p-2 border font-bold">${esc(f.crimeNo)}${f.place ? `<div class="text-xs font-normal text-gray-500">📍 ${esc(f.place)}</div>` : ''}</td>
+                        <td class="p-2 border">${esc(f.fileName)}</td>
                         <td class="p-2 border uppercase">${f.fileType}</td>
                         <td class="p-2 border">${f.rowCount}</td>
                         <td class="p-2 border"><button onclick="deleteFile(${f.id})" class="text-rose-600 font-bold"><i class="fa-solid fa-trash"></i></button></td>
@@ -578,9 +521,21 @@
             return open;
         }
 
-        function fillNumbers(p, crime, keep) {
+        const placeOf = p => { const e = document.getElementById(p + 'PlaceSelect'); return e ? e.value : ''; };
+        function onPlaceChange(p) { fillNumbers(p, document.getElementById(p + 'CrimeSelect').value, false, true); }
+
+        function fillNumbers(p, crime, keep, skipPlaces) {
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
-                const numbers = crime ? [...new Set((e.target.result || []).filter(r => r.fileType === FT[p] && r.crimeNo === crime).map(r => r.targetNo).filter(Boolean))] : [];
+                const recs = (e.target.result || []).filter(r => r.fileType === FT[p] && r.crimeNo === crime);
+                if (VIEW_CFG[p] && VIEW_CFG[p].place && !skipPlaces) {
+                    const ps = document.getElementById(p + 'PlaceSelect'), prevP = keep ? ps.value : '';
+                    const places = crime ? [...new Set(recs.map(r => r.place).filter(Boolean))] : [];
+                    ps.innerHTML = '<option value="">-- તમામ જગ્યા --</option>' + places.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
+                    ps.value = places.includes(prevP) ? prevP : '';
+                    document.getElementById(p + 'PlaceBox').style.display = places.length ? '' : 'none';
+                }
+                const place = placeOf(p);
+                const numbers = crime ? [...new Set(recs.filter(r => !place || r.place === place).map(r => r.targetNo).filter(Boolean))] : [];
                 const sel = document.getElementById(p + 'NumberSelect'), prev = keep ? sel.value : '';
                 const all = crime && VIEW_CFG[p] && VIEW_CFG[p].allOption ? '<option value="__ALL__">★ તમામ નંબરો</option>' : '';
                 sel.innerHTML = `<option value="">${crime ? '-- મોબાઇલ નંબર પસંદ કરો --' : '-- પહેલાં ગુના નંબર પસંદ કરો --'}</option>` + all +
@@ -595,7 +550,7 @@
             if(!db) return;
             db.transaction('files', 'readonly').objectStore('files').getAll().onsuccess = (e) => {
                 const crimes = [...new Set((e.target.result || []).filter(f => f.fileType === 'cdr').map(f => f.crimeNo))];
-                ['cdr', 'sum', 'ipdr', 'tower'].forEach(p => {
+                ['cdr', 'sum', 'tower'].forEach(p => {
                     const crimes = [...new Set((e.target.result || []).filter(f => f.fileType === FT[p]).map(f => f.crimeNo))];
                     const sel = document.getElementById(p + 'CrimeSelect'), prev = sel.value;
                     sel.innerHTML = '<option value="">-- ગુના નંબર પસંદ કરો --</option>' + crimes.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
@@ -643,7 +598,7 @@
             return true;
         }
         function autoRange(p) {
-            const crime = document.getElementById(p + 'CrimeSelect').value, number = document.getElementById(p + 'NumberSelect').value;
+            const crime = document.getElementById(p + 'CrimeSelect').value, number = document.getElementById(p + 'NumberSelect').value, place = placeOf(p);
             if (!setGate(p)) {
                 if (p === 'cdr') { cachedCdrRecords = []; document.getElementById('cdrRecordCountText').innerText = 'કુલ રેકોર્ડ્સ: 0'; }
                 else if (VIEWS[p]) { VIEWS[p].rec = []; document.getElementById(p + 'RecordCountText').innerText = 'કુલ રેકોર્ડ્સ: 0'; }
@@ -652,7 +607,7 @@
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
                 let mn = Infinity, mx = -Infinity, a = null, b = null;
                 (e.target.result || []).forEach(r => {
-                    if (r.fileType !== FT[p] || (crime && r.crimeNo !== crime) || !matchNum(r, number)) return;
+                    if (r.fileType !== FT[p] || (crime && r.crimeNo !== crime) || !matchNum(r, number) || (place && r.place !== place)) return;
                     const k = dateKey(r.date); if (!k) return;
                     const sec = secOf(r) || 0, key = k * 100000 + sec;
                     if (key < mn) { mn = key; a = { k, sec }; }
@@ -758,28 +713,18 @@
             });
         });
 
-        const FT = { cdr: 'cdr', sum: 'cdr', ipdr: 'ipdr', tower: 'tower' };
+        const FT = { cdr: 'cdr', sum: 'cdr', tower: 'tower' };
         const matchNum = (r, n) => !n || n === '__ALL__' || r.targetNo === n;
         const WRAP = 'min-w-[14rem] whitespace-normal break-words';
-        const IPB = 'break-all min-w-[9rem]';
         const VIEW_CFG = {
-            ipdr: {
-                title: 'IP Detail Record (IPDR) ડેશબોર્ડ', hd: 'bg-emerald-900', th: 'bg-emerald-800', on: 'bg-emerald-700', allOption: true,
-                cols: [['ગુના નંબર', r => r.crimeNo, 'font-bold'], ['ટાર્ગેટ નંબર (MSISDN)', r => r.targetNo, 'font-semibold text-emerald-900'], ['IMEI / Device ID', r => r.imei], ['IMSI', r => r.imsi],
-                    ['સોર્સ IP', r => r.srcIp, IPB], ['સોર્સ પોર્ટ', r => r.srcPort], ['Translated IP', r => r.transIp, IPB], ['Trans. પોર્ટ', r => r.transPort],
-                    ['ડેસ્ટિનેશન IP', r => r.dstIp, IPB], ['ડેસ્ટ. પોર્ટ', r => r.dstPort], ['તારીખ', r => r.date], ['સમય', r => r.time, 'font-bold'],
-                    ['IP Start (allocation)', r => r.ipStart], ['Session End', r => r.endTime], ['ડ્યુરેશન (સેક)', r => r.duration], ['Uplink', r => r.upVol], ['Downlink', r => r.downVol],
-                    ['First Cell ID / લોકેશન', r => r.firstCellAddress || r.cellId, WRAP], ['Last Cell ID', r => r.lastCellId], ['CGI', r => r.cgi], ['PGW IP', r => r.pgwIp, IPB],
-                    ['APN', r => r.apn], ['Roaming', r => [r.roaming, r.roamCircle].filter(Boolean).join(' / ')], ['Static/Dynamic', r => r.allocType], ['SIM', r => r.simType], ['Subscriber (નામ | સરનામું | સંપર્ક)', r => r.subscriber, WRAP]]
-            },
             tower: {
-                title: 'Tower Dump ડેશબોર્ડ', hd: 'bg-purple-900', th: 'bg-purple-800', on: 'bg-purple-700', allOption: true,
-                cols: [['ગુના નંબર', r => r.crimeNo, 'font-bold'], ['મોબાઇલ નંબર', r => r.targetNo, 'font-semibold text-purple-900'], ['B-પાર્ટી', r => r.otherNo], ['તારીખ', r => r.date],
+                title: 'Tower Dump ડેશબોર્ડ', hd: 'bg-purple-900', th: 'bg-purple-800', on: 'bg-purple-700', allOption: true, place: true,
+                cols: [['ગુના નંબર', r => r.crimeNo, 'font-bold'], ['ગુનાની જગ્યા', r => r.place], ['મોબાઇલ નંબર', r => r.targetNo, 'font-semibold text-purple-900'], ['B-પાર્ટી', r => r.otherNo], ['તારીખ', r => r.date],
                     ['સમય', r => r.time, 'font-bold'], ['ડ્યુરેશન', r => r.duration], ['પ્રકાર', r => r.type], ['IMEI', r => r.imei], ['IMSI', r => r.imsi],
                     ['Cell ID', r => r.cellId], ['લોકેશન / સરનામું', r => r.firstCellAddress, WRAP]]
             }
         };
-        const VIEWS = { ipdr: { rec: [], mode: 'page', page: 1, size: 100, shown: 0 }, tower: { rec: [], mode: 'page', page: 1, size: 100, shown: 0 } };
+        const VIEWS = { tower: { rec: [], mode: 'page', page: 1, size: 100, shown: 0 } };
 
         function buildView(p) {
             const c = VIEW_CFG[p], lbl = 'block text-xs font-bold text-gray-700 mb-1';
@@ -789,14 +734,16 @@
                     <h2 class="text-xl font-bold">${c.title}</h2>
                     <div id="${p}RecordCountText" class="text-xs bg-black/30 px-3 py-1 rounded">કુલ રેકોર્ડ્સ: 0</div>
                 </div>
-                <div class="bg-white rounded-xl p-3 border grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                <div class="bg-white rounded-xl p-3 border grid grid-cols-1 ${c.place ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-3 items-center">
                     <div><label class="${lbl}">ગુના નંબર પસંદ કરો:</label>
                         <select id="${p}CrimeSelect" onchange="fillNumbers('${p}', this.value, false)" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">-- ગુના નંબર પસંદ કરો --</option></select></div>
+                    ${c.place ? `<div id="${p}PlaceBox" style="display:none"><label class="${lbl}">ગુનાની જગ્યા:</label>
+                        <select id="${p}PlaceSelect" onchange="onPlaceChange('${p}')" class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">-- તમામ જગ્યા --</option></select></div>` : ''}
                     <div><label class="${lbl}">મોબાઇલ નંબર પસંદ કરો:</label>
                         <select id="${p}NumberSelect" onchange="autoRange('${p}')" disabled class="w-full text-xs border rounded p-1.5 bg-gray-50 font-semibold"><option value="">-- પહેલાં ગુના નંબર પસંદ કરો --</option></select></div>
                     <div id="${p}SearchBox" style="display:none"><label class="${lbl}">સર્ચ કરો:</label>
-                        <input type="text" id="${p}Search" oninput="viewReset('${p}')" placeholder="નંબર, IP, IMEI, લોકેશન સર્ચ..." class="w-full text-xs border rounded p-1.5"></div>
-                    <div id="${p}RangeBox" style="display:none" class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+                        <input type="text" id="${p}Search" oninput="viewReset('${p}')" placeholder="નંબર, IMEI, લોકેશન સર્ચ..." class="w-full text-xs border rounded p-1.5"></div>
+                    <div id="${p}RangeBox" style="display:none" class="col-span-full grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
                         ${[['FromDate', 'તારીખ થી:', 'date'], ['ToDate', 'તારીખ સુધી:', 'date'], ['FromTime', 'સમય થી:', 'time'], ['ToTime', 'સમય સુધી:', 'time']].map(inp).join('')}
                         <button onclick="autoRange('${p}')" class="text-xs bg-gray-200 hover:bg-gray-300 rounded p-1.5 font-bold"><i class="fa-solid fa-rotate-left"></i> પૂરા ડેટા પર રીસેટ</button>
                         <label class="col-span-2 md:col-span-5 text-xs text-gray-700 flex items-center gap-2"><input type="checkbox" id="${p}Daily" onchange="viewReset('${p}')"> દરરોજના સમય મુજબ ફિલ્ટર (દા.ત. રોજ 22:00 થી 06:00)</label>
@@ -848,10 +795,10 @@
             if (!db) return;
             const crime = document.getElementById(p + 'CrimeSelect').value, number = document.getElementById(p + 'NumberSelect').value, V = VIEWS[p];
             if (!crime || !number) { V.rec = []; return; }
-            const q = document.getElementById(p + 'Search').value.toLowerCase(), rf = getRangeFilter(p), cols = VIEW_CFG[p].cols;
+            const q = document.getElementById(p + 'Search').value.toLowerCase(), rf = getRangeFilter(p), cols = VIEW_CFG[p].cols, place = placeOf(p);
             db.transaction('records', 'readonly').objectStore('records').getAll().onsuccess = (e) => {
                 const sk = r => dateKey(r.date) * 100000 + (secOf(r) || 0);
-                V.rec = (e.target.result || []).filter(r => r.fileType === FT[p] && r.crimeNo === crime && matchNum(r, number) && inRange(r, rf) &&
+                V.rec = (e.target.result || []).filter(r => r.fileType === FT[p] && r.crimeNo === crime && matchNum(r, number) && (!place || r.place === place) && inRange(r, rf) &&
                     (!q || cols.some(x => String(x[1](r) || '').toLowerCase().includes(q)))).sort((a, b) => sk(a) - sk(b));
                 document.getElementById(p + 'RecordCountText').innerText = 'કુલ રેકોર્ડ્સ: ' + V.rec.length;
                 V.page = 1; viewRender(p);
@@ -890,7 +837,7 @@
             const sc = document.getElementById(p + 'Scroll'), V = VIEWS[p];
             if (end) { if (V.shown < V.rec.length) viewAppend(p, true); sc.scrollTop = sc.scrollHeight; } else sc.scrollTop = 0;
         }
-        buildView('ipdr'); buildView('tower');
+        buildView('tower');
 
 
         // ---------- CDR SUMMARY ----------

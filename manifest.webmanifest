@@ -1,7 +1,7 @@
 {
-  "name": "CDR, IPDR અને ટાવર ડમ્પ એનાલાઇઝર",
+  "name": "CDR અને ટાવર ડમ્પ એનાલાઇઝર",
   "short_name": "CDR Analyzer",
-  "description": "CDR, IPDR અને ટાવર ડમ્પ ફોરેન્સિક એનાલિસિસ ટૂલ",
+  "description": "CDR અને ટાવર ડમ્પ ફોરેન્સિક એનાલિસિસ ટૂલ",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
